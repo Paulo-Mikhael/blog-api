@@ -1,0 +1,12 @@
+name: blog-api
+
+services:
+  pg:
+    image: bitnami/postgresql:13.17.0
+    container_name: postgresql-database
+    ports:
+      - "5560:5432"
+    environment:
+      - POSTGRESQL_USERNAME=docker
+      - POSTGRESQL_PASSWORD=docker
+      - POSTGRESQL_DATABASE=blog-database
