@@ -13,9 +13,10 @@ export function replyErrorResponse(error: unknown, reply: FastifyReply) {
   }
 
   if (error instanceof Error) {
+    console.error("Erro interno do servidor", error.message);
+
     return reply.code(500).send({
       message: "Erro interno do servidor",
-      errorMessage: error.message,
     });
   }
 }
