@@ -9,7 +9,4 @@ export function routes(
   const fastifyZod = fastify.withTypeProvider<ZodTypeProvider>();
 
   fastifyZod.register(PostRoutes);
-  fastifyZod.get("/teste", (request, reply) => {
-    reply.send({ hello: "world" });
-  });
 }
