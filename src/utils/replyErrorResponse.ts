@@ -6,15 +6,10 @@ export function replyErrorResponse(error: unknown, reply: FastifyReply) {
   if (error instanceof z.ZodError) {
     return reply.status(400).send({
       message: "Dados inválidos",
-      errors: error.errors.map((err) => {
-        // Só retorna os erros de validação do Zod
-        if (err.code === "invalid_type") {
-          return {
-            property: err.path.join("."),
-            message: err.message,
-          };
-        }
-      }),
+      errors: error.errors.map((err) => ({
+        property: err.path.join("."),
+        message: err.message,
+      })),
     });
   }
 

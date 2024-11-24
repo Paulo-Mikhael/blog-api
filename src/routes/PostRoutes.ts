@@ -5,5 +5,6 @@ export const PostRoutes: FastifyPluginAsyncZod = async (app) => {
   const post = new PostController();
 
   app.get("/posts", (request, reply) => post.getAll({ request, reply }));
+  app.get("/posts/:id", (request, reply) => post.getById({ request, reply }));
   app.post("/create-post", (request, reply) => post.create({ request, reply }));
 };
