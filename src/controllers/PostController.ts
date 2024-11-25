@@ -1,3 +1,5 @@
+import { v4 as uuidV4 } from "uuid";
+import type { CreatePost } from "../types/CreatePost";
 import type { RouteParams } from "../types/RouteParams";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { PostModel } from "../models/PostModel";
@@ -33,8 +35,15 @@ export class PostController {
   }
   async create({ request, reply }: RouteParams) {
     try {
-      const validatedPost = this.postService.validate(request.body);
-      const createdPost = await this.postModel.create(validatedPost);
+      const validatedPostBody = this.postService.validate(request.body);
+      const newPost: CreatePost = {
+        id: uuidV4(),
+        ...validatedPostBody,
+        cover: "",
+        slug: this.postService.getSlug(validatedPostBody.title),
+      };
+
+      const createdPost = await this.postModel.create(newPost);
 
       return reply.code(201).send({ postId: createdPost.id });
     } catch (error) {
@@ -51,7 +60,40 @@ export class PostController {
       }
 
       await this.postModel.delete(requiredPost.id);
-      reply.code(200);
+      reply.code(204);
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async update({ request, reply }: RouteParams) {
+    try {
+      const id = this.postService.getParamId(request.params);
+      const requiredPost = await this.postModel.getById(id);
+      if (!requiredPost) {
+        return reply.code(404).send({ message: "Post não encontrado" });
+      }
+      const postToUpdateBody = this.postService.validate(request.body);
+      const updatedCover = postToUpdateBody.cover;
+      const newPost: CreatePost = {
+        id,
+        ...postToUpdateBody,
+        cover: updatedCover ? updatedCover : requiredPost.cover,
+        slug: this.postService.getSlug(postToUpdateBody.title),
+      };
+
+      await this.postModel.update(newPost);
+
+      reply.code(204);
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async updateCover({ request, reply }: RouteParams) {
+    try {
+      const fastifyMultipart = await request.file();
+      const file = fastifyMultipart?.filename;
+
+      reply.code(200).send({ message: file });
     } catch (error) {
       replyErrorResponse(error, reply);
     }

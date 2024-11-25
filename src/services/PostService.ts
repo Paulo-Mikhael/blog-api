@@ -1,14 +1,21 @@
 import z from "zod";
-import { v4 as uuidV4 } from "uuid";
-import type { Post } from "../types/Post";
+import type { CreatePost } from "../types/CreatePost";
 import { RequestService } from "./RequestService";
 
 const message = "Propriedade inválida";
 const minLengthMessage = "A propriedade deve ter pelo menos 1 caractere";
 const maxLengthMessage = "A propriedade deve ter menos que 100 caracteres";
 
+interface ValidatePostReturn {
+  title: string;
+  content: string;
+  category: string;
+  authorId: string;
+  cover?: string;
+}
+
 export class PostService extends RequestService {
-  validate(body: unknown): Post {
+  validate(body: unknown): ValidatePostReturn {
     const postSchema = z.object({
       title: z
         .string({ message })
@@ -17,18 +24,15 @@ export class PostService extends RequestService {
       content: z.string({ message }).min(1, { message: minLengthMessage }),
       category: z.string({ message }).min(1, { message: minLengthMessage }),
       authorId: z.string({ message }),
+      cover: z.string().optional(),
     });
 
     const validPost = postSchema.parse(body);
 
-    const newPost: Post = {
-      id: uuidV4(),
-      ...validPost,
-      authorId: validPost.authorId,
-      cover: "",
-      slug: validPost.title.toLowerCase().replaceAll(" ", "-"),
-    };
+    return validPost;
+  }
 
-    return newPost;
+  getSlug(title: string) {
+    return title.toLowerCase().replaceAll(" ", "-");
   }
 }

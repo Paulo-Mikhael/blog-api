@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import fastifyMultipart from "@fastify/multipart";
 import { routes } from "./routes";
 import {
   serializerCompiler,
@@ -16,6 +17,7 @@ fastify.setErrorHandler((error, request, reply) => {
 fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);
 
+fastify.register(fastifyMultipart);
 fastify.register(routes);
 
 fastify.listen({ port: 3333 }, (err, address) => {
