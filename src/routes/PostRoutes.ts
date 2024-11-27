@@ -9,7 +9,7 @@ export const PostRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post("/posts", (request, reply) => post.create({ request, reply }));
   app.delete("/posts/:id", (request, reply) => post.delete({ request, reply }));
   app.put("/posts/:id", (request, reply) => post.update({ request, reply }));
-  app.put("/post-cover", (request, reply) =>
-    post.updateCover({ request, reply })
-  );
+  app.post("/post-cover", (request, reply) => {
+    post.updateCover({ request, reply });
+  });
 };

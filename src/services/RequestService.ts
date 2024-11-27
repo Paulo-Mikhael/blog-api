@@ -1,4 +1,8 @@
+import type { MultipartFile } from "@fastify/multipart";
+import { pipeline } from "node:stream/promises";
+import fs from "node:fs";
 import z from "zod";
+import { v4 as uuidV4 } from "uuid";
 
 export class RequestService {
   getParamId(params: unknown): string {
@@ -34,5 +38,12 @@ export class RequestService {
       skip,
     };
   }
-  getOneFile(formData: unknown) {}
+  async uploadFile(fastifyMultipartFile: MultipartFile) {
+    const file = fastifyMultipartFile.file;
+    const folder = "uploads";
+    const path = `${folder}/${fastifyMultipartFile.filename}`;
+    const fileType = fastifyMultipartFile.mimetype.replace("image/", "");
+    await pipeline(file, fs.createWriteStream(path));
+    await fs.renameSync(path, `${folder}/${uuidV4()}.${fileType}`);
+  }
 }

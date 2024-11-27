@@ -17,7 +17,7 @@ fastify.setErrorHandler((error, request, reply) => {
 fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);
 
-fastify.register(fastifyMultipart);
+fastify.register(fastifyMultipart, { limits: { fileSize: 2000000 } });
 fastify.register(routes);
 
 fastify.listen({ port: 3333 }, (err, address) => {

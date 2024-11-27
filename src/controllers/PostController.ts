@@ -90,10 +90,16 @@ export class PostController {
   }
   async updateCover({ request, reply }: RouteParams) {
     try {
-      const fastifyMultipart = await request.file();
-      const file = fastifyMultipart?.filename;
+      const fastifyMultipartFile = await request.file();
 
-      reply.code(200).send({ message: file });
+      if (
+        !fastifyMultipartFile?.file ||
+        fastifyMultipartFile.file.bytesRead <= 0
+      ) {
+        return reply.code(400).send({ message: "Nenhum arquivo anexado" });
+      }
+      await this.postService.uploadFile(fastifyMultipartFile);
+      reply.code(204).send({ message: "Arquivo enviado" });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
