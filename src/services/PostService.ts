@@ -1,8 +1,7 @@
 import z from "zod";
-import type { CreatePost } from "../types/CreatePost";
 import { RequestService } from "./RequestService";
 
-const message = "Propriedade inválida";
+const message = "Propriedade inválida ou inexistente";
 const minLengthMessage = "A propriedade deve ter pelo menos 1 caractere";
 const maxLengthMessage = "A propriedade deve ter menos que 100 caracteres";
 
@@ -11,6 +10,7 @@ interface ValidatePostReturn {
   content: string;
   category: string;
   authorId: string;
+  slug: string;
   cover?: string;
 }
 
@@ -29,10 +29,18 @@ export class PostService extends RequestService {
 
     const validPost = postSchema.parse(body);
 
-    return validPost;
+    return {
+      ...validPost,
+      category: validPost.category.toLowerCase(),
+      slug: this.getSlug(validPost.title),
+    };
   }
 
   getSlug(title: string) {
-    return title.toLowerCase().replaceAll(" ", "-");
+    return title
+      .toLowerCase()
+      .replaceAll(" ", "-")
+      .replace(",", "")
+      .replace(".", "");
   }
 }

@@ -1,13 +1,15 @@
 import { v4 as uuidV4 } from "uuid";
 import type { CreatePost } from "../types/CreatePost";
 import type { RouteParams } from "../types/RouteParams";
+import type { PostModel } from "../models/PostModel";
+import type { PostService } from "../services/PostService";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
-import { PostModel } from "../models/PostModel";
-import { PostService } from "../services/PostService";
 
 export class PostController {
-  private postModel = new PostModel();
-  private postService = new PostService();
+  constructor(
+    private readonly postModel: PostModel,
+    private readonly postService: PostService
+  ) {}
 
   async getAll({ request, reply }: RouteParams) {
     try {
@@ -21,7 +23,7 @@ export class PostController {
   }
   async getById({ request, reply }: RouteParams) {
     try {
-      const id = this.postService.getParamId(request.params);
+      const { id } = this.postService.getParamId(request.params);
       const requiredPost = await this.postModel.getById(id);
 
       if (!requiredPost) {
@@ -40,7 +42,6 @@ export class PostController {
         id: uuidV4(),
         ...validatedPostBody,
         cover: "",
-        slug: this.postService.getSlug(validatedPostBody.title),
       };
 
       const createdPost = await this.postModel.create(newPost);
@@ -52,7 +53,7 @@ export class PostController {
   }
   async delete({ request, reply }: RouteParams) {
     try {
-      const id = this.postService.getParamId(request.params);
+      const { id } = this.postService.getParamId(request.params);
       const requiredPost = await this.postModel.getById(id);
 
       if (!requiredPost) {
@@ -67,7 +68,7 @@ export class PostController {
   }
   async update({ request, reply }: RouteParams) {
     try {
-      const id = this.postService.getParamId(request.params);
+      const { id } = this.postService.getParamId(request.params);
       const requiredPost = await this.postModel.getById(id);
       if (!requiredPost) {
         return reply.code(404).send({ message: "Post não encontrado" });
@@ -78,7 +79,6 @@ export class PostController {
         id,
         ...postToUpdateBody,
         cover: updatedCover ? updatedCover : requiredPost.cover,
-        slug: this.postService.getSlug(postToUpdateBody.title),
       };
 
       await this.postModel.update(newPost);
@@ -90,16 +90,70 @@ export class PostController {
   }
   async updateCover({ request, reply }: RouteParams) {
     try {
+      const { id } = this.postService.getParamId(request.params);
+      const requiredPost = await this.postModel.getById(id);
+      if (!requiredPost) {
+        return reply.code(404).send({ message: "Post não encontrado" });
+      }
+      if (!request.isMultipart()) {
+        return reply.code(400).send({
+          message:
+            "Requisição inválida. Precisa-se ser do tipo 'multipart/form-data'",
+        });
+      }
+
       const fastifyMultipartFile = await request.file();
 
-      if (
-        !fastifyMultipartFile?.file ||
-        fastifyMultipartFile.file.bytesRead <= 0
-      ) {
-        return reply.code(400).send({ message: "Nenhum arquivo anexado" });
+      const { url } = await this.postService.uploadFile(fastifyMultipartFile);
+
+      await this.postModel.updateCover(id, url);
+
+      reply.code(200).send({ imageUrl: url });
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async getPostsByCategory({ request, reply }: RouteParams) {
+    try {
+      const params = this.postService.getRequestObject(request.params, [
+        "category",
+      ]);
+      const category = params.category;
+
+      if (!category) {
+        return reply
+          .code(400)
+          .send({ message: "Insira o nome de uma categoria" });
       }
-      await this.postService.uploadFile(fastifyMultipartFile);
-      reply.code(204).send({ message: "Arquivo enviado" });
+
+      const { take, skip } = this.postService.getQueryTakeSkip(request.query);
+      const posts = await this.postModel.getPostsByCategory(
+        category,
+        take,
+        skip
+      );
+
+      reply.code(200).send({ posts });
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async getPostsByUserId({ request, reply }: RouteParams) {
+    try {
+      const params = this.postService.getRequestObject(request.params, [
+        "userId",
+      ]);
+      const userId = params.userId;
+      if (!userId) {
+        return reply
+          .code(400)
+          .send({ message: "Insira o id do autor do post" });
+      }
+
+      const { take, skip } = this.postService.getQueryTakeSkip(request.query);
+      const posts = await this.postModel.getPostsByUserId(userId, take, skip);
+
+      reply.code(200).send({ posts });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
