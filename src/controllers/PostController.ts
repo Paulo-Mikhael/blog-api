@@ -4,6 +4,7 @@ import type { RouteParams } from "../types/RouteParams";
 import type { PostModel } from "../models/PostModel";
 import type { PostService } from "../services/PostService";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
+import { getPostOrThrow } from "../utils/getPostOrThrow";
 
 export class PostController {
   constructor(
@@ -13,10 +14,10 @@ export class PostController {
 
   async getAll({ request, reply }: RouteParams) {
     try {
-      const query = this.postService.getQueryTakeSkip(request.query);
-      const posts = await this.postModel.getAll(query.take, query.skip);
+      const { take, skip } = this.postService.getQueryTakeSkip(request.query);
+      const posts = await this.postModel.getAll(take, skip);
 
-      reply.code(200).send(posts);
+      return reply.code(200).send(posts);
     } catch (error) {
       replyErrorResponse(error, reply);
     }
@@ -24,11 +25,7 @@ export class PostController {
   async getById({ request, reply }: RouteParams) {
     try {
       const { id } = this.postService.getParamId(request.params);
-      const requiredPost = await this.postModel.getById(id);
-
-      if (!requiredPost) {
-        return reply.code(404).send({ message: "Post não encontrado" });
-      }
+      const requiredPost = await getPostOrThrow(id, reply);
 
       return reply.code(200).send(requiredPost);
     } catch (error) {
@@ -54,14 +51,10 @@ export class PostController {
   async delete({ request, reply }: RouteParams) {
     try {
       const { id } = this.postService.getParamId(request.params);
-      const requiredPost = await this.postModel.getById(id);
-
-      if (!requiredPost) {
-        return reply.code(404).send({ message: "Post não encontrado" });
-      }
+      const requiredPost = await getPostOrThrow(id, reply);
 
       await this.postModel.delete(requiredPost.id);
-      reply.code(204);
+      return reply.code(204).send();
     } catch (error) {
       replyErrorResponse(error, reply);
     }
@@ -69,10 +62,7 @@ export class PostController {
   async update({ request, reply }: RouteParams) {
     try {
       const { id } = this.postService.getParamId(request.params);
-      const requiredPost = await this.postModel.getById(id);
-      if (!requiredPost) {
-        return reply.code(404).send({ message: "Post não encontrado" });
-      }
+      const requiredPost = await getPostOrThrow(id, reply);
       const postToUpdateBody = this.postService.validate(request.body);
       const updatedCover = postToUpdateBody.cover;
       const newPost: CreatePost = {
@@ -83,7 +73,7 @@ export class PostController {
 
       await this.postModel.update(newPost);
 
-      reply.code(204);
+      return reply.code(204).send();
     } catch (error) {
       replyErrorResponse(error, reply);
     }
@@ -91,10 +81,7 @@ export class PostController {
   async updateCover({ request, reply }: RouteParams) {
     try {
       const { id } = this.postService.getParamId(request.params);
-      const requiredPost = await this.postModel.getById(id);
-      if (!requiredPost) {
-        return reply.code(404).send({ message: "Post não encontrado" });
-      }
+      await getPostOrThrow(id, reply);
       if (!request.isMultipart()) {
         return reply.code(400).send({
           message:
@@ -108,14 +95,14 @@ export class PostController {
 
       await this.postModel.updateCover(id, url);
 
-      reply.code(200).send({ imageUrl: url });
+      return reply.code(200).send({ imageUrl: url });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
   }
   async getPostsByCategory({ request, reply }: RouteParams) {
     try {
-      const params = this.postService.getRequestObject(request.params, [
+      const params = this.postService.getObjectFromRequest(request.params, [
         "category",
       ]);
       const category = params.category;
@@ -127,20 +114,20 @@ export class PostController {
       }
 
       const { take, skip } = this.postService.getQueryTakeSkip(request.query);
-      const posts = await this.postModel.getPostsByCategory(
-        category,
+      const posts = await this.postModel.getPostsByField(
+        { field: "category", value: category },
         take,
         skip
       );
 
-      reply.code(200).send({ posts });
+      return reply.code(200).send({ posts });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
   }
   async getPostsByUserId({ request, reply }: RouteParams) {
     try {
-      const params = this.postService.getRequestObject(request.params, [
+      const params = this.postService.getObjectFromRequest(request.params, [
         "userId",
       ]);
       const userId = params.userId;
@@ -151,9 +138,13 @@ export class PostController {
       }
 
       const { take, skip } = this.postService.getQueryTakeSkip(request.query);
-      const posts = await this.postModel.getPostsByUserId(userId, take, skip);
+      const posts = await this.postModel.getPostsByField(
+        { field: "authorId", value: userId },
+        take,
+        skip
+      );
 
-      reply.code(200).send({ posts });
+      return reply.code(200).send({ posts });
     } catch (error) {
       replyErrorResponse(error, reply);
     }

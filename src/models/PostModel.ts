@@ -1,9 +1,12 @@
 import type { Post } from "@prisma/client";
 import type { CreatePost } from "../types/CreatePost";
-import type { MultipartFile } from "@fastify/multipart";
 import db from "../db/dbConfig";
 import { verifyForeignKeyError } from "../utils/verifyForeignKeyError";
-import { PostService } from "../services/PostService";
+
+interface FieldParams {
+  field: string;
+  value: unknown;
+}
 
 export class PostModel {
   async getAll(take = 50, skip = 0): Promise<Post[]> {
@@ -51,22 +54,13 @@ export class PostModel {
   async updateCover(id: string, coverUrl: string) {
     await db.post.update({ where: { id }, data: { cover: coverUrl } });
   }
-  async getPostsByCategory(category: string, take = 50, skip = 0) {
-    const postsByCategory = await db.post.findMany({
-      where: { category },
+  async getPostsByField(fieldParams: FieldParams, take = 50, skip = 0) {
+    const postsByField = await db.post.findMany({
+      where: { [fieldParams.field]: fieldParams.value },
       take,
       skip,
     });
 
-    return postsByCategory;
-  }
-  async getPostsByUserId(userId: string, take = 50, skip = 0) {
-    const postsByCategory = await db.post.findMany({
-      where: { authorId: userId },
-      take,
-      skip,
-    });
-
-    return postsByCategory;
+    return postsByField;
   }
 }

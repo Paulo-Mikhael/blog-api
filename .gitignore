@@ -132,3 +132,6 @@ dist
 # formater library and editor configs
 .vscode
 biome.json
+
+# uploads folder
+uploads/*

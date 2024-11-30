@@ -6,6 +6,7 @@ import { PostService } from "../services/PostService";
 export const PostRoutes: FastifyPluginAsyncZod = async (app) => {
   const postModel = new PostModel();
   const postService = new PostService();
+  // Passando model e service como uma depedência do controller
   const post = new PostController(postModel, postService);
 
   app.get("/posts", (request, reply) => post.getAll({ request, reply }));

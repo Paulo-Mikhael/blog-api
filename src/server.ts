@@ -1,6 +1,5 @@
 import Fastify from "fastify";
 import fastifyMultipart from "@fastify/multipart";
-import multer from "multer";
 import {
   serializerCompiler,
   validatorCompiler,
@@ -20,13 +19,15 @@ fastify.setErrorHandler((error, request, reply) => {
 fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);
 
+// Servindo arquivos estáticos
 fastify.register(fastifyStatic, {
   root: path.join(__dirname, "../uploads"),
   prefix: "/images/",
 });
-fastify.register(fastifyMultipart, {
-  limits: { fileSize: 2000000 },
-});
+// Lidando com requisições "multipart/form-data"
+export const fileSize = 1570000;
+fastify.register(fastifyMultipart, { limits: { fileSize } });
+// Rotas
 fastify.register(routes);
 
 fastify.listen({ port: 3333 }, (err, address) => {

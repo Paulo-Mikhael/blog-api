@@ -4,6 +4,9 @@ import fs from "node:fs";
 import z from "zod";
 import { v4 as uuidV4 } from "uuid";
 import { ClientError } from "../errors/ClientError";
+import { getFileDirectoryConfig } from "../utils/getFileDirectoryConfigs";
+import { validateFileType } from "../utils/validateFileType";
+import { createOrDeleteFile } from "../utils/createOrDeleteFile";
 
 export class RequestService {
   getParamId(params: unknown): { id: string } {
@@ -27,10 +30,10 @@ export class RequestService {
     const queryTake = Number(validatedQuery.take);
     const querySkip = Number(validatedQuery.skip);
 
-    if (validatedQuery.take && queryTake !== 0) {
+    if (validatedQuery.take && queryTake > 0) {
       take = queryTake;
     }
-    if (validatedQuery.skip && querySkip !== 0) {
+    if (validatedQuery.skip && querySkip > 0) {
       skip = querySkip;
     }
 
@@ -49,22 +52,16 @@ export class RequestService {
     if (!file || file.bytesRead <= 0) {
       throw new ClientError("Nenhum arquivo anexado", 400);
     }
-
-    const folder = "uploads";
     const fileType = fastifyMultipartFile.mimetype.replace("image/", "");
-    const newFileName = `${uuidV4()}.${fileType}`;
+    if (validateFileType(fileType) === false) {
+      throw new ClientError("Arquivo não suportado", 400);
+    }
 
-    const tempPath = `${folder}/${fastifyMultipartFile.filename}`;
-    const path = `${folder}/${newFileName}`;
-
-    await pipeline(file, fs.createWriteStream(tempPath));
-    await fs.renameSync(tempPath, path);
-
-    const url = `/images/${newFileName}`;
+    const { url } = await createOrDeleteFile(fastifyMultipartFile);
 
     return { url };
   }
-  getRequestObject(requestObject: unknown, properties: string[]) {
+  getObjectFromRequest(request: unknown, properties: string[]) {
     let zObjectProperties: { [x: string]: z.ZodOptional<z.ZodString> } = {};
     for (let i = 0; i < properties.length; i++) {
       const property = properties[i];
@@ -75,7 +72,7 @@ export class RequestService {
     }
     const querySchema = z.object(zObjectProperties);
 
-    const validatedQuery = querySchema.parse(requestObject);
+    const validatedQuery = querySchema.parse(request);
 
     return validatedQuery;
   }
