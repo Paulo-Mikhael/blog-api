@@ -18,7 +18,7 @@ export async function createOrDeleteFile(
   await pipeline(file, fs.createWriteStream(tempPath));
 
   if (file.bytesRead >= fileSize) {
-    await fs.unlinkSync(tempPath);
+    await fs.unlinkSync(tempPath); // Deleta o arquivo
     throw new ClientError("Tamanho máximo de arquivo excedido", 413);
   }
 

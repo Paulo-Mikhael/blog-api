@@ -3,7 +3,7 @@ import { PostController } from "../controllers/PostController";
 import { PostModel } from "../models/PostModel";
 import { PostService } from "../services/PostService";
 
-export const PostRoutes: FastifyPluginAsyncZod = async (app) => {
+export const postRoutes: FastifyPluginAsyncZod = async (app) => {
   const postModel = new PostModel();
   const postService = new PostService();
   // Passando model e service como uma depedência do controller

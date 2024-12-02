@@ -1,14 +1,16 @@
 import type { MultipartFile } from "@fastify/multipart";
-import { pipeline } from "node:stream/promises";
-import fs from "node:fs";
 import z from "zod";
-import { v4 as uuidV4 } from "uuid";
 import { ClientError } from "../errors/ClientError";
-import { getFileDirectoryConfig } from "../utils/getFileDirectoryConfigs";
 import { validateFileType } from "../utils/validateFileType";
 import { createOrDeleteFile } from "../utils/createOrDeleteFile";
 
 export class RequestService {
+  public readonly requiredMessage = "Propriedade inválida ou inexistente";
+  public readonly minLengthMessage =
+    "A propriedade deve ter pelo menos 1 caractere";
+  public readonly maxLengthMessage =
+    "A propriedade deve ter menos que 100 caracteres";
+
   getParamId(params: unknown): { id: string } {
     const idParamsSchema = z.object({ id: z.string() });
 
@@ -54,7 +56,7 @@ export class RequestService {
     }
     const fileType = fastifyMultipartFile.mimetype.replace("image/", "");
     if (validateFileType(fileType) === false) {
-      throw new ClientError("Arquivo não suportado", 400);
+      throw new ClientError("Insira um arquivo de imagem", 415);
     }
 
     const { url } = await createOrDeleteFile(fastifyMultipartFile);

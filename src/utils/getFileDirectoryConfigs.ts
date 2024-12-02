@@ -12,6 +12,7 @@ export function getFileDirectoryConfig(
 ): FileDirectoryConfigReturn {
   const folder = "uploads";
   const fileType = fastifyMultipartFile.mimetype.replace("image/", "");
+
   const newFileName = `${uuidV4()}.${fileType}`;
 
   const tempPath = `${folder}/${fastifyMultipartFile.filename}`;

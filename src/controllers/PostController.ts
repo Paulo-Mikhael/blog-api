@@ -4,20 +4,22 @@ import type { RouteParams } from "../types/RouteParams";
 import type { PostModel } from "../models/PostModel";
 import type { PostService } from "../services/PostService";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
-import { getPostOrThrow } from "../utils/getPostOrThrow";
+import { Controller } from "./Controller";
 
-export class PostController {
+export class PostController extends Controller {
   constructor(
     private readonly postModel: PostModel,
     private readonly postService: PostService
-  ) {}
+  ) {
+    super();
+  }
 
   async getAll({ request, reply }: RouteParams) {
     try {
       const { take, skip } = this.postService.getQueryTakeSkip(request.query);
       const posts = await this.postModel.getAll(take, skip);
 
-      return reply.code(200).send(posts);
+      return reply.code(200).send({ posts });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
@@ -25,7 +27,7 @@ export class PostController {
   async getById({ request, reply }: RouteParams) {
     try {
       const { id } = this.postService.getParamId(request.params);
-      const requiredPost = await getPostOrThrow(id, reply);
+      const requiredPost = await this.postModel.getById(id);
 
       return reply.code(200).send(requiredPost);
     } catch (error) {
@@ -41,9 +43,9 @@ export class PostController {
         cover: "",
       };
 
-      const createdPost = await this.postModel.create(newPost);
+      const { postId } = await this.postModel.create(newPost);
 
-      return reply.code(201).send({ postId: createdPost.id });
+      return reply.code(201).send({ postId });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
@@ -51,7 +53,7 @@ export class PostController {
   async delete({ request, reply }: RouteParams) {
     try {
       const { id } = this.postService.getParamId(request.params);
-      const requiredPost = await getPostOrThrow(id, reply);
+      const requiredPost = await this.postModel.getById(id);
 
       await this.postModel.delete(requiredPost.id);
       return reply.code(204).send();
@@ -62,7 +64,7 @@ export class PostController {
   async update({ request, reply }: RouteParams) {
     try {
       const { id } = this.postService.getParamId(request.params);
-      const requiredPost = await getPostOrThrow(id, reply);
+      const requiredPost = await this.postModel.getById(id);
       const postToUpdateBody = this.postService.validate(request.body);
       const updatedCover = postToUpdateBody.cover;
       const newPost: CreatePost = {
@@ -71,7 +73,7 @@ export class PostController {
         cover: updatedCover ? updatedCover : requiredPost.cover,
       };
 
-      await this.postModel.update(newPost);
+      await this.postModel.update(id, newPost);
 
       return reply.code(204).send();
     } catch (error) {
@@ -81,7 +83,7 @@ export class PostController {
   async updateCover({ request, reply }: RouteParams) {
     try {
       const { id } = this.postService.getParamId(request.params);
-      await getPostOrThrow(id, reply);
+      const postToUpdate = await this.postModel.getById(id);
       if (!request.isMultipart()) {
         return reply.code(400).send({
           message:
@@ -93,7 +95,7 @@ export class PostController {
 
       const { url } = await this.postService.uploadFile(fastifyMultipartFile);
 
-      await this.postModel.updateCover(id, url);
+      await this.postModel.updateCover(postToUpdate.id, url);
 
       return reply.code(200).send({ imageUrl: url });
     } catch (error) {

@@ -35,6 +35,6 @@ fastify.listen({ port: 3333 }, (err, address) => {
     fastify.log.error(err);
     process.exit(1);
   } else {
-    console.log(`Servidor rodando na porta ${address}`);
+    console.log(`Server ready on ${address}`);
   }
 });

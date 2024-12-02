@@ -1,10 +1,6 @@
 import z from "zod";
 import { RequestService } from "./RequestService";
 
-const message = "Propriedade inválida ou inexistente";
-const minLengthMessage = "A propriedade deve ter pelo menos 1 caractere";
-const maxLengthMessage = "A propriedade deve ter menos que 100 caracteres";
-
 interface ValidatePostReturn {
   title: string;
   content: string;
@@ -18,12 +14,16 @@ export class PostService extends RequestService {
   validate(body: unknown): ValidatePostReturn {
     const postSchema = z.object({
       title: z
-        .string({ message })
-        .min(1, { message: minLengthMessage })
-        .max(100, { message: maxLengthMessage }),
-      content: z.string({ message }).min(1, { message: minLengthMessage }),
-      category: z.string({ message }).min(1, { message: minLengthMessage }),
-      authorId: z.string({ message }),
+        .string({ message: this.requiredMessage })
+        .min(1, { message: this.minLengthMessage })
+        .max(100, { message: this.maxLengthMessage }),
+      content: z
+        .string({ message: this.requiredMessage })
+        .min(1, { message: this.minLengthMessage }),
+      category: z
+        .string({ message: this.requiredMessage })
+        .min(1, { message: this.minLengthMessage }),
+      authorId: z.string({ message: this.requiredMessage }),
       cover: z.string().optional(),
     });
 
