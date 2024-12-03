@@ -5,6 +5,7 @@ import type { PostModel } from "../models/PostModel";
 import type { PostService } from "../services/PostService";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { Controller } from "./Controller";
+import { jsonWebToken } from "../utils/JsonWebToken";
 
 export class PostController extends Controller {
   constructor(
@@ -36,6 +37,7 @@ export class PostController extends Controller {
   }
   async create({ request, reply }: RouteParams) {
     try {
+      jsonWebToken.verify(request.headers.authorization);
       const validatedPostBody = this.postService.validate(request.body);
       const newPost: CreatePost = {
         id: uuidV4(),
@@ -43,15 +45,16 @@ export class PostController extends Controller {
         cover: "",
       };
 
-      const { postId } = await this.postModel.create(newPost);
+      const { post } = await this.postModel.create(newPost);
 
-      return reply.code(201).send({ postId });
+      return reply.code(201).send({ postId: post.id });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
   }
   async delete({ request, reply }: RouteParams) {
     try {
+      jsonWebToken.verify(request.headers.authorization);
       const { id } = this.postService.getParamId(request.params);
       const requiredPost = await this.postModel.getById(id);
 
@@ -63,6 +66,7 @@ export class PostController extends Controller {
   }
   async update({ request, reply }: RouteParams) {
     try {
+      jsonWebToken.verify(request.headers.authorization);
       const { id } = this.postService.getParamId(request.params);
       const requiredPost = await this.postModel.getById(id);
       const postToUpdateBody = this.postService.validate(request.body);
@@ -82,6 +86,7 @@ export class PostController extends Controller {
   }
   async updateCover({ request, reply }: RouteParams) {
     try {
+      jsonWebToken.verify(request.headers.authorization);
       const { id } = this.postService.getParamId(request.params);
       const postToUpdate = await this.postModel.getById(id);
       if (!request.isMultipart()) {

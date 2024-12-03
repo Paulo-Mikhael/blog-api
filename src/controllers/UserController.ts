@@ -4,6 +4,7 @@ import type { RouteParams } from "../types/RouteParams";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { v4 as uuidV4 } from "uuid";
 import { Controller } from "./Controller";
+import { jsonWebToken } from "../utils/JsonWebToken";
 
 export class UserController extends Controller {
   constructor(
@@ -41,9 +42,11 @@ export class UserController extends Controller {
         email: validatedUserBody.email,
         password: this.userService.getSafePassword(validatedUserBody.password),
       };
-      const { userId } = await this.userModel.create(newUser);
+      const { user } = await this.userModel.create(newUser);
+      const userPayload = { userId: user.id };
+      const { token } = jsonWebToken.create(userPayload);
 
-      return reply.code(201).send({ userId });
+      return reply.code(201).send({ jwtToken: token });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
@@ -75,6 +78,37 @@ export class UserController extends Controller {
       await this.userModel.update(id, newUser);
 
       return reply.code(204).send();
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async getActualUser({ request, reply }: RouteParams) {
+    try {
+      const { userId } = jsonWebToken.verify(request.headers.authorization);
+
+      const user = await this.userModel.getById(userId);
+
+      return reply.code(200).send({ user });
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async login({ request, reply }: RouteParams) {
+    try {
+      const validatedBody = this.userService.validate(request.body);
+      const user = await this.userModel.getByEmailAddress(validatedBody.email);
+      const userPassword = this.userService.decodeSafePassword(user.password);
+
+      if (userPassword !== validatedBody.password) {
+        return reply.code(401).send("Senha incorreta");
+      }
+
+      const userPayload = {
+        userId: user.id,
+      };
+      const { token } = jsonWebToken.create(userPayload);
+
+      return token;
     } catch (error) {
       replyErrorResponse(error, reply);
     }

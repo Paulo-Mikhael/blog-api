@@ -1,9 +1,11 @@
 import type { Post } from "@prisma/client";
 import type { CreatePost } from "../types/CreatePost";
+import type { FastifyError as FE } from "fastify";
 import db from "../db/dbConfig";
 import { verifyForeignKeyError } from "../utils/verifyForeignKeyError";
 import { ClientError } from "../errors/ClientError";
 import { Model } from "./Model";
+import { FastifyError } from "../errors/FastifyError";
 
 interface FieldParams {
   field: string;
@@ -32,16 +34,18 @@ export class PostModel extends Model<Post> {
     return requiredPost;
   }
   async create(post: CreatePost) {
-    const createdPost = await db.post.create({ data: post }).catch((error) => {
-      verifyForeignKeyError(error, ["authorId"]);
+    const createdPost = await db.post
+      .create({ data: post })
+      .catch((error: FE) => {
+        throw new FastifyError(error, { foreignKeys: ["authorId"] });
+      });
 
-      throw new Error("Erro na função create de PostModel");
-    });
-
-    return { postId: createdPost.id };
+    return { post: createdPost };
   }
   async delete(id: string) {
     await db.post.delete({ where: { id } });
+
+    return;
   }
   async update(id: string, newPost: CreatePost) {
     await db.post
@@ -50,9 +54,7 @@ export class PostModel extends Model<Post> {
         data: { ...newPost },
       })
       .catch((error) => {
-        verifyForeignKeyError(error, ["authorId"]);
-
-        throw new Error("Erro na função update de PostModel");
+        throw new FastifyError(error, { foreignKeys: ["authorId"] });
       });
 
     return;
