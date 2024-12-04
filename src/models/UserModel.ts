@@ -1,7 +1,7 @@
 import type { User } from "@prisma/client";
 import type { FastifyError as FE } from "fastify";
+import type { FieldParams } from "../types/FieldParams";
 import db from "../db/dbConfig";
-import { ClientError } from "../errors/ClientError";
 import { deleteUserData } from "../utils/deleteUserData";
 import { Model } from "./Model";
 import { FastifyError } from "../errors/FastifyError";
@@ -22,11 +22,16 @@ export class UserModel extends Model<User> {
       include: { profile: true },
     });
 
-    if (!requiredUser) {
-      throw new ClientError("Usuário não encontrado", 404);
-    }
-
     return requiredUser;
+  }
+  async getByField(fieldParams: FieldParams, take = 50, skip = 0) {
+    const users = db.user.findMany({
+      where: { [fieldParams.field]: fieldParams.value },
+      take,
+      skip,
+    });
+
+    return users;
   }
   async create(user: User) {
     const createdUser = await db.user
@@ -57,13 +62,6 @@ export class UserModel extends Model<User> {
   }
   async getByEmailAddress(email: string) {
     const user = await db.user.findUnique({ where: { email } });
-
-    if (!user) {
-      throw new ClientError(
-        "Usuário com o email fornecido não foi encontrado",
-        400
-      );
-    }
 
     return user;
   }

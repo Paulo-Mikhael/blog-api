@@ -5,7 +5,8 @@ import type { PostModel } from "../models/PostModel";
 import type { PostService } from "../services/PostService";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { Controller } from "./Controller";
-import { jsonWebToken } from "../utils/JsonWebToken";
+import { jsonWebToken } from "../utils/jsonWebToken";
+import { getPostOrThrow } from "../utils/getPostOrThrow";
 
 export class PostController extends Controller {
   constructor(
@@ -28,7 +29,7 @@ export class PostController extends Controller {
   async getById({ request, reply }: RouteParams) {
     try {
       const { id } = this.postService.getParamId(request.params);
-      const requiredPost = await this.postModel.getById(id);
+      const requiredPost = await getPostOrThrow(id);
 
       return reply.code(200).send(requiredPost);
     } catch (error) {
@@ -56,7 +57,7 @@ export class PostController extends Controller {
     try {
       jsonWebToken.verify(request.headers.authorization);
       const { id } = this.postService.getParamId(request.params);
-      const requiredPost = await this.postModel.getById(id);
+      const requiredPost = await getPostOrThrow(id);
 
       await this.postModel.delete(requiredPost.id);
       return reply.code(204).send();
@@ -68,7 +69,7 @@ export class PostController extends Controller {
     try {
       jsonWebToken.verify(request.headers.authorization);
       const { id } = this.postService.getParamId(request.params);
-      const requiredPost = await this.postModel.getById(id);
+      const requiredPost = await getPostOrThrow(id);
       const postToUpdateBody = this.postService.validate(request.body);
       const updatedCover = postToUpdateBody.cover;
       const newPost: CreatePost = {
@@ -88,7 +89,7 @@ export class PostController extends Controller {
     try {
       jsonWebToken.verify(request.headers.authorization);
       const { id } = this.postService.getParamId(request.params);
-      const postToUpdate = await this.postModel.getById(id);
+      const postToUpdate = await getPostOrThrow(id);
       if (!request.isMultipart()) {
         return reply.code(400).send({
           message:

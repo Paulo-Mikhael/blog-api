@@ -4,7 +4,8 @@ import type { RouteParams } from "../types/RouteParams";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { v4 as uuidV4 } from "uuid";
 import { Controller } from "./Controller";
-import { jsonWebToken } from "../utils/JsonWebToken";
+import { jsonWebToken } from "../utils/jsonWebToken";
+import { getUserOrThrow } from "../utils/getUserOrThrow";
 
 export class UserController extends Controller {
   constructor(
@@ -27,7 +28,7 @@ export class UserController extends Controller {
   async getById({ request, reply }: RouteParams) {
     try {
       const { id } = this.userService.getParamId(request.params);
-      const requiredUser = await this.userModel.getById(id);
+      const requiredUser = await getUserOrThrow(id);
 
       return reply.code(200).send({ user: requiredUser });
     } catch (error) {
@@ -54,7 +55,7 @@ export class UserController extends Controller {
   async delete({ request, reply }: RouteParams) {
     try {
       const { id } = this.userService.getParamId(request.params);
-      const requiredUser = await this.userModel.getById(id);
+      const requiredUser = await getUserOrThrow(id);
 
       await this.userModel.delete(requiredUser.id);
 
@@ -67,7 +68,7 @@ export class UserController extends Controller {
     try {
       const { id } = this.userService.getParamId(request.params);
       const validatedUserBody = this.userService.validate(request.body);
-      await this.userModel.getById(id);
+      await getUserOrThrow(id);
 
       const newUser = {
         id,
@@ -86,7 +87,7 @@ export class UserController extends Controller {
     try {
       const { userId } = jsonWebToken.verify(request.headers.authorization);
 
-      const user = await this.userModel.getById(userId);
+      const user = await getUserOrThrow(userId);
 
       return reply.code(200).send({ user });
     } catch (error) {
@@ -95,13 +96,13 @@ export class UserController extends Controller {
   }
   async login({ request, reply }: RouteParams) {
     try {
-      const validatedBody = this.userService.validate(request.body);
-      const user = await this.userModel.getByEmailAddress(validatedBody.email);
-      const userPassword = this.userService.decodeSafePassword(user.password);
-
-      if (userPassword !== validatedBody.password) {
-        return reply.code(401).send("Senha incorreta");
-      }
+      const validatedBody = this.userService.validate(request.body, {
+        strongPasswordValidation: false,
+      });
+      const user = await this.userService.login(
+        validatedBody.email,
+        validatedBody.password
+      );
 
       const userPayload = {
         userId: user.id,
@@ -109,6 +110,13 @@ export class UserController extends Controller {
       const { token } = jsonWebToken.create(userPayload);
 
       return token;
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async createProfile({ request, reply }: RouteParams) {
+    try {
+      const { id } = await this.userService.getParamId(request.params);
     } catch (error) {
       replyErrorResponse(error, reply);
     }

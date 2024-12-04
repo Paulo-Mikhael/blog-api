@@ -1,16 +1,10 @@
 import type { Post } from "@prisma/client";
 import type { CreatePost } from "../types/CreatePost";
 import type { FastifyError as FE } from "fastify";
+import type { FieldParams } from "../types/FieldParams";
 import db from "../db/dbConfig";
-import { verifyForeignKeyError } from "../utils/verifyForeignKeyError";
-import { ClientError } from "../errors/ClientError";
 import { Model } from "./Model";
 import { FastifyError } from "../errors/FastifyError";
-
-interface FieldParams {
-  field: string;
-  value: unknown;
-}
 
 export class PostModel extends Model<Post> {
   async getAll(take = 50, skip = 0): Promise<Post[]> {
@@ -26,10 +20,6 @@ export class PostModel extends Model<Post> {
     const requiredPost = await db.post.findUnique({
       where: { id },
     });
-
-    if (!requiredPost) {
-      throw new ClientError("Post não encontrado", 404);
-    }
 
     return requiredPost;
   }
@@ -59,10 +49,7 @@ export class PostModel extends Model<Post> {
 
     return;
   }
-  async updateCover(id: string, coverUrl: string) {
-    await db.post.update({ where: { id }, data: { cover: coverUrl } });
-  }
-  async getPostsByField(fieldParams: FieldParams, take = 50, skip = 0) {
+  async getByField(fieldParams: FieldParams, take = 50, skip = 0) {
     const postsByField = await db.post.findMany({
       where: { [fieldParams.field]: fieldParams.value },
       take,
@@ -70,5 +57,8 @@ export class PostModel extends Model<Post> {
     });
 
     return postsByField;
+  }
+  async updateCover(id: string, coverUrl: string) {
+    await db.post.update({ where: { id }, data: { cover: coverUrl } });
   }
 }
