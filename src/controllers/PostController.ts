@@ -122,7 +122,7 @@ export class PostController extends Controller {
       }
 
       const { take, skip } = this.postService.getQueryTakeSkip(request.query);
-      const posts = await this.postModel.getPostsByField(
+      const posts = await this.postModel.getByField(
         { field: "category", value: category },
         take,
         skip
@@ -146,7 +146,7 @@ export class PostController extends Controller {
       }
 
       const { take, skip } = this.postService.getQueryTakeSkip(request.query);
-      const posts = await this.postModel.getPostsByField(
+      const posts = await this.postModel.getByField(
         { field: "authorId", value: userId },
         take,
         skip

@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { postRoutes } from "./routes/postRoutes";
 import { userRoutes } from "./routes/userRoutes";
+import { userProfileRoutes } from "./routes/userProfileRoutes";
 
 export function routes(
   fastify: FastifyInstance,
@@ -11,4 +12,5 @@ export function routes(
 
   fastifyZod.register(postRoutes);
   fastifyZod.register(userRoutes);
+  fastifyZod.register(userProfileRoutes);
 }

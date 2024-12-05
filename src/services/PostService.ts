@@ -15,14 +15,14 @@ export class PostService extends RequestService {
     const postSchema = z.object({
       title: z
         .string({ message: this.requiredMessage })
-        .min(1, { message: this.minLengthMessage })
-        .max(100, { message: this.maxLengthMessage }),
+        .min(1, { message: this.minLengthMessage() })
+        .max(100, { message: this.maxLengthMessage(100) }),
       content: z
         .string({ message: this.requiredMessage })
-        .min(1, { message: this.minLengthMessage }),
+        .min(1, { message: this.minLengthMessage() }),
       category: z
         .string({ message: this.requiredMessage })
-        .min(1, { message: this.minLengthMessage }),
+        .min(1, { message: this.minLengthMessage() }),
       authorId: z.string({ message: this.requiredMessage }),
       cover: z.string().optional(),
     });

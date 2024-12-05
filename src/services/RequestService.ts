@@ -6,10 +6,12 @@ import { createOrDeleteFile } from "../utils/createOrDeleteFile";
 
 export class RequestService {
   public readonly requiredMessage = "Propriedade inválida ou inexistente";
-  public readonly minLengthMessage =
-    "A propriedade deve ter pelo menos 1 caractere";
-  public readonly maxLengthMessage =
-    "A propriedade deve ter menos que 100 caracteres";
+  public readonly minLengthMessage = (minNumber = 1) => {
+    return `A propriedade deve ter pelo menos ${minNumber} caractere`;
+  };
+  public readonly maxLengthMessage = (maxNumber: number) => {
+    return `A propriedade não pode passar de ${maxNumber} caracteres`;
+  };
 
   getParamId(params: unknown): { id: string } {
     const idParamsSchema = z.object({ id: z.string() });
