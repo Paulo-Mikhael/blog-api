@@ -17,7 +17,7 @@ export class UserProfileModel extends Model<UserProfile> {
     return profile;
   }
   async getByField(
-    fieldParams: FieldParams,
+    fieldParams: FieldParams<UserProfile>,
     take = 50,
     skip = 0
   ): Promise<UserProfile[]> {

@@ -49,7 +49,7 @@ export class PostModel extends Model<Post> {
 
     return;
   }
-  async getByField(fieldParams: FieldParams, take = 50, skip = 0) {
+  async getByField(fieldParams: FieldParams<Post>, take = 50, skip = 0) {
     const postsByField = await db.post.findMany({
       where: { [fieldParams.field]: fieldParams.value },
       take,

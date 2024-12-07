@@ -49,11 +49,11 @@ export class UserController extends Controller {
   }
   async create({ request, reply }: RouteParams) {
     try {
-      const validatedUserBody = this.userService.validate(request.body);
+      const validatedBody = this.userService.validate(request.body);
       const newUser = {
         id: uuidV4(),
-        email: validatedUserBody.email,
-        password: this.userService.getSafePassword(validatedUserBody.password),
+        email: validatedBody.email,
+        password: this.userService.getSafePassword(validatedBody.password),
       };
       const { user } = await this.userModel.create(newUser);
       const userPayload = { userId: user.id };
@@ -138,7 +138,7 @@ export class UserController extends Controller {
         );
       }
 
-      // Adicionando ID de usuário especificado na requisição
+      // Adicionando o ID de usuário especificado na requisição
       if (typeof request.body === "object") {
         request.body = {
           ...request.body,

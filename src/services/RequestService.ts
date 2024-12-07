@@ -72,29 +72,37 @@ export class RequestService {
 
   //Retorna um objeto contendo propriedades com os nomes especificados no array de string
   getObjectFromRequest(request: unknown, properties: string[]) {
-    // Variável que vai guardar o objeto
+    if (typeof request !== "object") {
+      return {};
+    }
+    // Variável que vai guardar as propriedades como um objeto ZOD
     let zObjectProperties: { [x: string]: z.ZodOptional<z.ZodString> } = {};
+    // Itera as propriedades passadas por parâmetro, e coloca cada uma na variável
     for (let i = 0; i < properties.length; i++) {
       const property = properties[i];
-      // Montando o objeto
+      // Montando o objeto ZOD
       zObjectProperties = {
         ...zObjectProperties,
         [property]: z.string().optional(),
       };
     }
-    const querySchema = z.object(zObjectProperties);
-    const validatedQuery = querySchema.parse(request);
+    // Objeto ZOD com as propriedades
+    const zodObject = z.object(zObjectProperties);
+    // Objeto normal com as propriedades
+    const requestObject = zodObject.parse(request);
 
+    // Itera as propriedades passadas por parâmetro e confere se todas elas estão no objeto
     for (let i = 0; i < properties.length; i++) {
       const property = properties[i];
 
-      if (!(property in validatedQuery)) {
+      if (!(property in requestObject)) {
+        // Lança uma mensagem de erro com o nome da propriedade que não foi possível extrair do parâmetro "request"
         throw new Error(
-          `Não foi possível retornar um objeto com a propriedade "${property}"`
+          `Não foi possível extrair a propriedade "${property}" da requisição`
         );
       }
     }
 
-    return validatedQuery;
+    return requestObject;
   }
 }
