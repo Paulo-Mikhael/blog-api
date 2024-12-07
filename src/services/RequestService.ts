@@ -14,7 +14,11 @@ export class RequestService {
   };
 
   getParamId(params: unknown): { id: string } {
-    const idParamsSchema = z.object({ id: z.string() });
+    const idParamsSchema = z.object({
+      id: z.string({
+        message: "Parâmetro ':id' não encontrado na requisição",
+      }),
+    });
 
     const validatedParams = idParamsSchema.parse(params);
 
@@ -65,18 +69,31 @@ export class RequestService {
 
     return { url };
   }
+
+  //Retorna um objeto contendo propriedades com os nomes especificados no array de string
   getObjectFromRequest(request: unknown, properties: string[]) {
+    // Variável que vai guardar o objeto
     let zObjectProperties: { [x: string]: z.ZodOptional<z.ZodString> } = {};
     for (let i = 0; i < properties.length; i++) {
       const property = properties[i];
+      // Montando o objeto
       zObjectProperties = {
         ...zObjectProperties,
         [property]: z.string().optional(),
       };
     }
     const querySchema = z.object(zObjectProperties);
-
     const validatedQuery = querySchema.parse(request);
+
+    for (let i = 0; i < properties.length; i++) {
+      const property = properties[i];
+
+      if (!(property in validatedQuery)) {
+        throw new Error(
+          `Não foi possível retornar um objeto com a propriedade "${property}"`
+        );
+      }
+    }
 
     return validatedQuery;
   }

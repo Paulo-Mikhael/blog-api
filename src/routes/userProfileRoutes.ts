@@ -23,4 +23,7 @@ export const userProfileRoutes: FastifyPluginAsyncZod = async (app) => {
   app.delete("/profiles/:id", (request, reply) => {
     userProfile.delete({ request, reply });
   });
+  app.put("/profiles/:id", (request, reply) => {
+    userProfile.update({ request, reply });
+  });
 };

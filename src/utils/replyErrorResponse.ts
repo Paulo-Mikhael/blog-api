@@ -62,7 +62,7 @@ export function replyErrorResponse(error: unknown, reply: FastifyReply) {
   }
 
   if (error instanceof Error) {
-    console.error("Erro interno do servidor", error.message);
+    console.error(error.stack);
 
     /* Se o erro não for causado pelo usuário, 
     deve-se retornar uma mensagem genérica para o cliente */

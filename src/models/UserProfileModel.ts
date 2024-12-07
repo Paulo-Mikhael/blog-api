@@ -50,7 +50,15 @@ export class UserProfileModel extends Model<UserProfile> {
     return;
   }
   async update(id: string, newProfile: UserProfile) {
-    await db.user.update({ where: { id }, data: newProfile });
+    await db.userProfile
+      .update({ where: { id }, data: newProfile })
+      .catch((error: FE) => {
+        throw new FastifyError(error, {
+          foreignKeys: ["userId"],
+          uniqueFieldsErrorMessage:
+            "O nome ou usuário especificados já existem",
+        });
+      });
 
     return;
   }

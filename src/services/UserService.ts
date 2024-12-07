@@ -22,7 +22,11 @@ export class UserService extends RequestService {
       password: z.string({ message: this.requiredMessage }),
     });
 
-    const validatedBody = userSchema.parse(body);
+    let objectBody = {};
+    if (body && typeof body === "object") {
+      objectBody = body;
+    }
+    const validatedBody = userSchema.parse(objectBody);
     const password = validatedBody.password;
     if (passwordOptions.strongPasswordValidation) {
       if (password.length < 8) {

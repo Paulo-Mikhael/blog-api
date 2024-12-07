@@ -27,7 +27,11 @@ export class PostService extends RequestService {
       cover: z.string().optional(),
     });
 
-    const validPost = postSchema.parse(body);
+    let objectBody = {};
+    if (body && typeof body === "object") {
+      objectBody = body;
+    }
+    const validPost = postSchema.parse(objectBody);
 
     return {
       ...validPost,

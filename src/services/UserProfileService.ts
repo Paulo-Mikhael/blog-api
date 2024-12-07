@@ -3,11 +3,6 @@ import { RequestService } from "./RequestService";
 
 export class UserProfileService extends RequestService {
   validate(body: unknown) {
-    let objectBody = {};
-    if (body && typeof body === "object") {
-      objectBody = body;
-    }
-
     const userProfileSchema = z.object({
       name: z
         .string({ message: this.requiredMessage })
@@ -23,6 +18,10 @@ export class UserProfileService extends RequestService {
       userId: z.string({ message: this.requiredMessage }),
     });
 
+    let objectBody = {};
+    if (body && typeof body === "object") {
+      objectBody = body;
+    }
     const validatedBody = userProfileSchema.parse(objectBody);
 
     return validatedBody;
