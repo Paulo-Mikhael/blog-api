@@ -41,13 +41,11 @@ export class PostService extends RequestService {
   }
 
   getSlug(title: string): string {
-    return title
+    const normalizedTitle = this.normalizeText(title);
+    return normalizedTitle
       .toLowerCase()
-      .normalize("NFD") // Remove acentos e caracteres especiais
-      .replace(/[\u0300-\u036f]/g, "") // Remove marcas diacríticas
       .replace(/[^a-z0-9\s-]/g, "") // Remove caracteres não alfanuméricos exceto espaços e hifens
       .replace(/\s+/g, "-") // Substitui espaços por hifens
-      .replace(/-+/g, "-") // Remove hifens consecutivos
-      .trim(); // Remove espaços ou hifens extras no início e no fim
+      .replace(/-+/g, "-"); // Remove hifens consecutivos
   }
 }

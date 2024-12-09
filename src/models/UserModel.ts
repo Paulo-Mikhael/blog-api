@@ -27,6 +27,7 @@ export class UserModel extends Model<User> {
   async getByField(fieldParams: FieldParams<User>, take = 50, skip = 0) {
     const users = db.user.findMany({
       where: { [fieldParams.field]: fieldParams.value },
+      include: { profile: true },
       take,
       skip,
     });

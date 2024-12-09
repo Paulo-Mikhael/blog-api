@@ -1,6 +1,9 @@
+import type { FastifyRequest } from "fastify";
 import type { Time } from "../types/Time";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import z from "zod";
+import { ClientError } from "../errors/ClientError";
+import { getUserOrThrow } from "./getUserOrThrow";
 
 export const jsonWebToken = {
   create: createJsonToken,
@@ -24,7 +27,7 @@ function jwtSecretKey(): string {
 
 function createJsonToken(
   payload: { [x: string]: any },
-  time: Time = { hours: "1h" }
+  time: Time = { hours: "24h" }
 ): { token: string } {
   userPayloadSchema.parse(payload);
 
@@ -33,7 +36,7 @@ function createJsonToken(
   let expiresIn: string | number = 0;
 
   // Para caso a função receber um objeto vazio
-  if (!hours && !seconds) expiresIn = "1h";
+  if (!hours && !seconds) expiresIn = "24h";
 
   if (seconds) expiresIn = seconds;
   if (hours) expiresIn = hours;
@@ -47,7 +50,14 @@ function createJsonToken(
   return { token };
 }
 
-function verifyJsonToken(requestAuthorization: string | undefined) {
+async function verifyJsonToken(request: FastifyRequest) {
+  const requestAuthorization = request.headers.authorization;
+  const requestCookies = request.cookies;
+  const userEmail = requestCookies.userEmail;
+  if (!userEmail) {
+    throw new ClientError("Nenhum usuário logado", 400);
+  }
+
   const secretKey = jwtSecretKey();
   if (
     !requestAuthorization ||
@@ -63,6 +73,12 @@ function verifyJsonToken(requestAuthorization: string | undefined) {
 
   const payload = jwt.verify(jwtToken, secretKey);
   const parsedPayload = userPayloadSchema.parse(payload);
+  const user = await getUserOrThrow(parsedPayload.userId);
+  if (user.email !== userEmail) {
+    throw new JsonWebTokenError(
+      "Usuário negado. Insira o Bearer Token correto ou faça login novamente"
+    );
+  }
 
   return parsedPayload;
 }

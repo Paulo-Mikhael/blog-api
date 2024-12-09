@@ -105,4 +105,11 @@ export class RequestService {
 
     return requestObject;
   }
+
+  normalizeText(text: string) {
+    return text
+      .normalize("NFD") // Remove acentos e caracteres especiais
+      .replace(/[\u0300-\u036f]/g, "") // Remove marcas diacríticas
+      .trim(); // Remove espaços ou hifens extras no início e no fim
+  }
 }

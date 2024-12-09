@@ -2,6 +2,7 @@ import type { UserService } from "../services/UserService";
 import type { RouteParams } from "../types/RouteParams";
 import type { UserModel } from "../models/UserModel";
 import type { UserProfileService } from "../services/UserProfileService";
+import type { CookieSerializeOptions } from "@fastify/cookie";
 import { UserProfileModel } from "../models/UserProfileModel";
 import { UserProfileController } from "./UserProfileController";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
@@ -10,6 +11,9 @@ import { Controller } from "./Controller";
 import { jsonWebToken } from "../utils/jsonWebToken";
 import { getUserOrThrow } from "../utils/getUserOrThrow";
 import { ClientError } from "../errors/ClientError";
+import { cookieOptions } from "../data/cookieOptions";
+import dayjs from "dayjs";
+import { cookies } from "../utils/cookies";
 
 export class UserController extends Controller {
   private readonly userProfileController: UserProfileController;
@@ -59,6 +63,7 @@ export class UserController extends Controller {
       const userPayload = { userId: user.id };
       const { token } = jsonWebToken.create(userPayload);
 
+      cookies.userEmail.set(reply, user.email);
       return reply.code(201).send({ jwtToken: token });
     } catch (error) {
       replyErrorResponse(error, reply);
@@ -66,8 +71,8 @@ export class UserController extends Controller {
   }
   async delete({ request, reply }: RouteParams) {
     try {
-      const { id } = this.userService.getParamId(request.params);
-      const requiredUser = await getUserOrThrow(id);
+      const { userId } = await jsonWebToken.verify(request);
+      const requiredUser = await getUserOrThrow(userId);
 
       await this.userModel.delete(requiredUser.id);
 
@@ -78,17 +83,17 @@ export class UserController extends Controller {
   }
   async update({ request, reply }: RouteParams) {
     try {
-      const { id } = this.userService.getParamId(request.params);
+      const { userId } = await jsonWebToken.verify(request);
       const validatedUserBody = this.userService.validate(request.body);
-      await getUserOrThrow(id);
+      await getUserOrThrow(userId);
 
       const newUser = {
-        id,
+        id: userId,
         email: validatedUserBody.email,
         password: this.userService.getSafePassword(validatedUserBody.password),
       };
 
-      await this.userModel.update(id, newUser);
+      await this.userModel.update(userId, newUser);
 
       return reply.code(204).send();
     } catch (error) {
@@ -97,11 +102,30 @@ export class UserController extends Controller {
   }
   async getActualUser({ request, reply }: RouteParams) {
     try {
-      const { userId } = jsonWebToken.verify(request.headers.authorization);
+      const userEmail = request.cookies.userEmail;
+      if (!userEmail) {
+        return reply.code(200).send({ message: "Nenhum usuário logado" });
+      }
+      const usersByEmail = await this.userModel.getByField({
+        field: "email",
+        value: userEmail,
+      });
+      const user = usersByEmail[0];
 
-      const user = await getUserOrThrow(userId);
+      // Se entrar neste bloco é erro do servidor, porque os cookies são programados para retornar um usuário com um email que existe
+      if (!user) {
+        throw new Error(
+          `Ocorreu um erro ao pegar o usuário de email ${userEmail}`
+        );
+      }
+      const userProfile = user.profile;
+      if (!userProfile) {
+        return reply.code(200).send({ userEmail });
+      }
 
-      return reply.code(200).send({ user });
+      return reply
+        .code(200)
+        .send({ userUrl: `/users/profile/${userProfile.name}` });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
@@ -115,21 +139,21 @@ export class UserController extends Controller {
         validatedBody.email,
         validatedBody.password
       );
-
       const userPayload = {
         userId: user.id,
       };
       const { token } = jsonWebToken.create(userPayload);
 
-      return token;
+      cookies.userEmail.set(reply, user.email);
+      return reply.send({ jwtToken: token });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
   }
   async createProfile({ request, reply }: RouteParams) {
     try {
-      const { id } = await this.userService.getParamId(request.params);
-      const user = await getUserOrThrow(id);
+      const { userId } = await jsonWebToken.verify(request);
+      const user = await getUserOrThrow(userId);
       const userProfile = user.profile;
       if (userProfile) {
         throw new ClientError(
@@ -142,7 +166,7 @@ export class UserController extends Controller {
       if (typeof request.body === "object") {
         request.body = {
           ...request.body,
-          userId: id,
+          userId,
         };
       }
 
@@ -159,18 +183,30 @@ export class UserController extends Controller {
       const userProfileName = params.name;
 
       const userProfileModel = new UserProfileModel();
-      const userProfile = await userProfileModel.getByField({
+      const userProfilesByName = await userProfileModel.getByField({
         field: "name",
         value: userProfileName,
       });
-      if (userProfile.length <= 0) {
+      if (userProfilesByName.length <= 0) {
         throw new ClientError("Perfil de Usuário não encontrado", 404);
       }
+      const userProfile = userProfilesByName[0];
 
-      const userId = userProfile[0].userId;
-      const user = await this.userModel.getById(userId);
+      const userData = {
+        profile: userProfile,
+        email: userProfile.email,
+      };
 
-      return reply.code(200).send({ user });
+      return reply.code(200).send({ user: userData });
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async logoff({ reply }: RouteParams) {
+    try {
+      cookies.userEmail.remove(reply);
+
+      return reply.code(204).send();
     } catch (error) {
       replyErrorResponse(error, reply);
     }

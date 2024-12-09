@@ -4,30 +4,71 @@ import type { FastifyError as FE } from "fastify";
 import { Model } from "./Model";
 import db from "../db/dbConfig";
 import { FastifyError } from "../errors/FastifyError";
+import { returnSafeProfiles } from "../utils/returnSafeProfiles";
+import { returnSafeProfile } from "../utils/returnSafeProfile";
 
 export class UserProfileModel extends Model<UserProfile> {
-  async getAll(take = 50, skip = 0): Promise<UserProfile[]> {
-    const profiles = await db.userProfile.findMany({ take, skip });
+  async getAll(take = 50, skip = 0) {
+    const profiles = await db.userProfile.findMany({
+      select: {
+        id: true,
+        name: true,
+        biography: true,
+        avatar: true,
+        User: {
+          select: { email: true },
+        },
+      },
+      take,
+      skip,
+    });
+    const safeProfiles = returnSafeProfiles(profiles);
 
-    return profiles;
+    return safeProfiles;
   }
-  async getById(id: string): Promise<UserProfile | null> {
-    const profile = await db.userProfile.findUnique({ where: { id } });
+  async getById(id: string) {
+    const profile = await db.userProfile.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        biography: true,
+        avatar: true,
+        User: {
+          select: { email: true },
+        },
+      },
+    });
 
-    return profile;
+    if (profile) {
+      const safeProfile = returnSafeProfile(profile);
+
+      return safeProfile;
+    }
+
+    return null;
   }
-  async getByField(
-    fieldParams: FieldParams<UserProfile>,
-    take = 50,
-    skip = 0
-  ): Promise<UserProfile[]> {
+  async getByField(fieldParams: FieldParams<UserProfile>, take = 50, skip = 0) {
     const profiles = await db.userProfile.findMany({
       where: { [fieldParams.field]: fieldParams.value },
+      select: {
+        id: true,
+        name: true,
+        biography: true,
+        avatar: true,
+        User: {
+          select: { email: true },
+        },
+      },
       take,
       skip,
     });
 
-    return profiles;
+    if (profiles.length > 0) {
+      return returnSafeProfiles(profiles);
+    }
+
+    return [];
   }
   async create(
     userProfile: UserProfile
@@ -37,8 +78,7 @@ export class UserProfileModel extends Model<UserProfile> {
       .catch((error: FE) => {
         throw new FastifyError(error, {
           foreignKeys: ["userId"],
-          uniqueFieldsErrorMessage:
-            "O nome ou usuário especificados já existem",
+          uniqueFieldsErrorMessage: "Esse nome de usuário já existe",
         });
       });
 

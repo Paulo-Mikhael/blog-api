@@ -40,13 +40,19 @@ export class UserProfileController extends Controller {
   async create({ request, reply }: RouteParams) {
     try {
       const validatedProfile = this.userProfileService.validate(request.body);
+      const normalizedUserName = this.userProfileService
+        .normalizeText(validatedProfile.name)
+        .replaceAll(" ", "");
       const newProfile: UserProfile = {
         id: uuidV4(),
         ...validatedProfile,
+        name: normalizedUserName,
       };
       const { userProfile } = await this.userProfileModel.create(newProfile);
 
-      return reply.code(200).send({ profileId: userProfile.id });
+      return reply
+        .code(200)
+        .send({ userUrl: `/users/profile/${userProfile.name}` });
     } catch (error) {
       replyErrorResponse(error, reply);
     }

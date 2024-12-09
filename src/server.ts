@@ -7,6 +7,7 @@ import {
 import fastifyStatic from "@fastify/static";
 import path from "node:path";
 import { routes } from "./routes";
+import fastifyCookie from "@fastify/cookie";
 
 const fastify = Fastify({
   logger: true,
@@ -27,6 +28,8 @@ fastify.register(fastifyStatic, {
 // Lidando com requisições "multipart/form-data"
 export const fileSize = 1570000;
 fastify.register(fastifyMultipart, { limits: { fileSize } });
+// Lidando com cookies
+fastify.register(fastifyCookie);
 // Rotas
 fastify.register(routes);
 
