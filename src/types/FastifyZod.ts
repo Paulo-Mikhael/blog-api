@@ -4,7 +4,7 @@ import type {
   FastifyBaseLogger,
 } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import type { IncomingMessage, ServerResponse } from "http";
+import type { IncomingMessage, ServerResponse } from "node:http";
 
 export type FastifyZod = FastifyInstance<
   RawServerDefault,

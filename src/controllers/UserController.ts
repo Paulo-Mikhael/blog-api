@@ -2,7 +2,6 @@ import type { UserService } from "../services/UserService";
 import type { RouteParams } from "../types/RouteParams";
 import type { UserModel } from "../models/UserModel";
 import type { UserProfileService } from "../services/UserProfileService";
-import type { CookieSerializeOptions } from "@fastify/cookie";
 import { UserProfileModel } from "../models/UserProfileModel";
 import { UserProfileController } from "./UserProfileController";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
@@ -11,8 +10,6 @@ import { Controller } from "./Controller";
 import { jsonWebToken } from "../utils/jsonWebToken";
 import { getUserOrThrow } from "../utils/getUserOrThrow";
 import { ClientError } from "../errors/ClientError";
-import { cookieOptions } from "../data/cookieOptions";
-import dayjs from "dayjs";
 import { cookies } from "../utils/cookies";
 
 export class UserController extends Controller {
@@ -76,6 +73,7 @@ export class UserController extends Controller {
 
       await this.userModel.delete(requiredUser.id);
 
+      cookies.userEmail.remove(reply);
       return reply.code(204).send();
     } catch (error) {
       replyErrorResponse(error, reply);
@@ -112,7 +110,7 @@ export class UserController extends Controller {
       });
       const user = usersByEmail[0];
 
-      // Se entrar neste bloco é erro do servidor, porque os cookies são programados para retornar um usuário com um email que existe
+      // Se entrar neste bloco é erro do servidor, porque os cookies devem retornar um usuário com um email que existe
       if (!user) {
         throw new Error(
           `Ocorreu um erro ao pegar o usuário de email ${userEmail}`

@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import fastifyMultipart from "@fastify/multipart";
 import {
+  jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
@@ -8,17 +9,51 @@ import fastifyStatic from "@fastify/static";
 import path from "node:path";
 import { routes } from "./routes";
 import fastifyCookie from "@fastify/cookie";
+import fastifySwagger from "@fastify/swagger";
+import fastifySwaggerUi from "@fastify/swagger-ui";
+import { replyErrorResponse } from "./utils/replyErrorResponse";
 
 const fastify = Fastify({
   logger: true,
 });
 
 fastify.setErrorHandler((error, request, reply) => {
-  reply.code(400).send({ error: error.message });
+  replyErrorResponse(error, reply);
 });
 
 fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);
+
+// Swagger
+fastify.register(fastifySwagger, {
+  openapi: {
+    openapi: "3.0.0",
+    info: { title: "API para blog", version: "0.0.1" },
+    servers: [
+      { url: "http://localhost:3333", description: "Development server" },
+    ],
+    externalDocs: {
+      description: "Github do Projeto",
+      url: "https://github.com/Paulo-Mikhael/blog-api?tab=readme-ov-file#readme",
+    },
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [
+      {
+        BearerAuth: [],
+      },
+    ],
+  },
+  transform: jsonSchemaTransform,
+});
+fastify.register(fastifySwaggerUi, { routePrefix: "/docs" });
 
 // Servindo arquivos estáticos
 fastify.register(fastifyStatic, {

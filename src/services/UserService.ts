@@ -11,22 +11,22 @@ import { UserModel } from "../models/UserModel";
 type PasswordOptions = { strongPasswordValidation: boolean };
 
 export class UserService extends RequestService {
+  public userSchema = z.object({
+    email: z
+      .string({ message: this.requiredMessage })
+      .email({ message: "Email inválido" }),
+    password: z.string({ message: this.requiredMessage }),
+  });
+
   validate(
     body: unknown,
     passwordOptions: PasswordOptions = { strongPasswordValidation: true }
   ) {
-    const userSchema = z.object({
-      email: z
-        .string({ message: this.requiredMessage })
-        .email({ message: "Email inválido" }),
-      password: z.string({ message: this.requiredMessage }),
-    });
-
     let objectBody = {};
     if (body && typeof body === "object") {
       objectBody = body;
     }
-    const validatedBody = userSchema.parse(objectBody);
+    const validatedBody = this.userSchema.parse(objectBody);
     const password = validatedBody.password;
     if (passwordOptions.strongPasswordValidation) {
       if (password.length < 8) {
