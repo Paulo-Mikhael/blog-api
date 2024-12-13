@@ -8,6 +8,7 @@ import { getUserOrThrow } from "./getUserOrThrow";
 export const jsonWebToken = {
   create: createJsonToken,
   verify: verifyJsonToken,
+  verifyExistentUser,
 };
 
 const userPayloadSchema = z.object({
@@ -54,6 +55,7 @@ async function verifyJsonToken(request: FastifyRequest) {
   const requestAuthorization = request.headers.authorization;
   const requestCookies = request.cookies;
   const userEmail = requestCookies.userEmail;
+
   if (!userEmail) {
     throw new ClientError("Nenhum usuário logado", 400);
   }
@@ -81,4 +83,13 @@ async function verifyJsonToken(request: FastifyRequest) {
   }
 
   return parsedPayload;
+}
+
+function verifyExistentUser(request: FastifyRequest) {
+  const requestCookies = request.cookies;
+  const userEmail = requestCookies.userEmail;
+
+  if (userEmail) {
+    throw new ClientError("Já existe um usuário logado", 400);
+  }
 }

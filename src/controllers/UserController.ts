@@ -82,16 +82,22 @@ export class UserController extends Controller {
   async update({ request, reply }: RouteParams) {
     try {
       const { userId } = await jsonWebToken.verify(request);
-      const validatedUserBody = this.userService.validate(request.body);
-      await getUserOrThrow(userId);
+      const user = await getUserOrThrow(userId);
+      const validatedUserBody = await this.userService.validateUpdateBody(
+        request.body,
+        user.email
+      );
 
       const newUser = {
-        id: userId,
-        email: validatedUserBody.email,
-        password: this.userService.getSafePassword(validatedUserBody.password),
+        id: user.id,
+        email: validatedUserBody.newEmail,
+        password: this.userService.getSafePassword(
+          validatedUserBody.newPassword
+        ),
       };
 
-      await this.userModel.update(userId, newUser);
+      await this.userModel.update(user.id, newUser);
+      cookies.userEmail.set(reply, newUser.email);
 
       return reply.code(204).send();
     } catch (error) {
@@ -102,7 +108,7 @@ export class UserController extends Controller {
     try {
       const userEmail = request.cookies.userEmail;
       if (!userEmail) {
-        return reply.code(200).send({ message: "Nenhum usuário logado" });
+        return reply.code(400).send({ message: "Nenhum usuário logado" });
       }
       const usersByEmail = await this.userModel.getByField({
         field: "email",
@@ -130,6 +136,7 @@ export class UserController extends Controller {
   }
   async login({ request, reply }: RouteParams) {
     try {
+      jsonWebToken.verifyExistentUser(request);
       const validatedBody = this.userService.validate(request.body, {
         strongPasswordValidation: false,
       });
@@ -190,12 +197,7 @@ export class UserController extends Controller {
       }
       const userProfile = userProfilesByName[0];
 
-      const userData = {
-        profile: userProfile,
-        email: userProfile.email,
-      };
-
-      return reply.code(200).send({ user: userData });
+      return reply.code(200).send({ userProfile });
     } catch (error) {
       replyErrorResponse(error, reply);
     }

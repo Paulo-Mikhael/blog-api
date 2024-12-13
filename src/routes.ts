@@ -8,7 +8,13 @@ export function routes(
   fastify: FastifyInstance,
   options: FastifyPluginOptions
 ) {
+  // Fastify com provider que ajuda a validar os dados
   const fastifyZod = fastify.withTypeProvider<ZodTypeProvider>();
+
+  // Rota padrão
+  fastifyZod.get("/", (request, reply) => {
+    return reply.redirect("/docs");
+  });
 
   fastifyZod.register(postRoutes);
   fastifyZod.register(userRoutes);

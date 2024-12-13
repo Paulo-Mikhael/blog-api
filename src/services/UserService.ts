@@ -7,8 +7,11 @@ import { ClientError } from "../errors/ClientError";
 import { specialCharacters } from "../data/specials_characteres";
 import { numbers } from "../data/numbers";
 import { UserModel } from "../models/UserModel";
+import { jsonWebToken } from "../utils/jsonWebToken";
 
-type PasswordOptions = { strongPasswordValidation: boolean };
+type BodyOptions = {
+  strongPasswordValidation?: boolean;
+};
 
 export class UserService extends RequestService {
   public userSchema = z.object({
@@ -17,42 +20,68 @@ export class UserService extends RequestService {
       .email({ message: "Email inválido" }),
     password: z.string({ message: this.requiredMessage }),
   });
+  public updateUserSchema = z.object({
+    newEmail: z
+      .string({ message: this.requiredMessage })
+      .email({ message: "Email inválido" }),
+    oldPassword: z.string({ message: this.requiredMessage }),
+    newPassword: z.string({ message: this.requiredMessage }),
+  });
 
   validate(
     body: unknown,
-    passwordOptions: PasswordOptions = { strongPasswordValidation: true }
+    bodyOptions: BodyOptions = {
+      strongPasswordValidation: true,
+    }
   ) {
     let objectBody = {};
     if (body && typeof body === "object") {
       objectBody = body;
     }
+
     const validatedBody = this.userSchema.parse(objectBody);
-    const password = validatedBody.password;
-    if (passwordOptions.strongPasswordValidation) {
-      if (password.length < 8) {
-        throw new ClientError("A senha deve ter pelo menos 8 caracteres", 400);
-      }
-      if (itHas(password, upperLetters) === false) {
-        throw new ClientError(
-          "A senha precisa ter pelo menos uma letra maiúscula",
-          400
-        );
-      }
-      if (itHas(password, numbers) === false) {
-        throw new ClientError("A senha precisa ter pelo menos um número", 406);
-      }
-      if (itHas(password, specialCharacters) === false) {
-        throw new ClientError(
-          "A senha precisa ter pelo menos um caractere especial",
-          400
-        );
-      }
+
+    if (bodyOptions.strongPasswordValidation) {
+      this.verifyStrongPassword(validatedBody.password);
     }
 
-    return {
-      email: validatedBody.email,
-      password,
-    };
+    return validatedBody;
+  }
+  async validateUpdateBody(body: unknown, userActualEmail: string) {
+    let objectBody = {};
+    if (body && typeof body === "object") {
+      objectBody = body;
+    }
+
+    const validatedUpdateUserBody = this.updateUserSchema.parse(objectBody);
+    const bodyOldPassword = validatedUpdateUserBody.oldPassword;
+    const bodyNewPassword = validatedUpdateUserBody.newPassword;
+
+    await this.login(userActualEmail, bodyOldPassword);
+    this.verifyStrongPassword(bodyNewPassword);
+
+    return validatedUpdateUserBody;
+  }
+
+  private verifyStrongPassword(password: string) {
+    if (password.length < 8) {
+      throw new ClientError("A senha deve ter pelo menos 8 caracteres", 400);
+    }
+    if (itHas(password, upperLetters) === false) {
+      throw new ClientError(
+        "A senha precisa ter pelo menos uma letra maiúscula",
+        400
+      );
+    }
+    if (itHas(password, numbers) === false) {
+      throw new ClientError("A senha precisa ter pelo menos um número", 406);
+    }
+    if (itHas(password, specialCharacters) === false) {
+      throw new ClientError(
+        "A senha precisa ter pelo menos um caractere especial",
+        400
+      );
+    }
   }
 
   getSafePassword(password: string): string {
@@ -78,10 +107,10 @@ export class UserService extends RequestService {
     }
   }
 
-  async login(userEmail: string, passwordToValidate: string): Promise<User> {
+  async login(userEmail: string, passwordToVerify: string): Promise<User> {
     const userModel = new UserModel();
     const user = await userModel.getByEmailAddress(userEmail);
-    const encodedPassword = this.getSafePassword(passwordToValidate);
+    const encodedPassword = this.getSafePassword(passwordToVerify);
 
     if (!user) {
       throw new ClientError(

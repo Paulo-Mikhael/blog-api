@@ -2,11 +2,14 @@ import z from "zod";
 import type { Schema } from "../types/Schema";
 import { userReturnSchema } from "./components/userReturnSchema";
 import { UserService } from "../services/UserService";
+import { noContentSchema } from "./schemas/NoContentSchema";
 
 export class UsersDocs {
   private adminTag = "Admin";
   private userTag = "User";
-  private userSchema = new UserService().userSchema;
+  private userService = new UserService();
+  private userSchema = this.userService.userSchema;
+  private updateUserSchema = this.userService.updateUserSchema;
 
   getAllSchema(): Schema {
     const newSchema: Schema = {
@@ -62,10 +65,22 @@ export class UsersDocs {
         "Verifica o Bearer Token do usuário logado e exclui o usuário.",
       tags: [this.userTag],
       response: {
-        204: z.object({
-          message: z.string().default("Success no content"),
-        }),
+        204: noContentSchema,
       },
+    };
+
+    return newSchema;
+  }
+  updateSchema(): Schema {
+    const newSchema: Schema = {
+      summary: "Atualiza os dados do usuário atual",
+      description:
+        "Verifica o Bearer Token do usuário logado e atualiza para os dados informados no corpo da requisição.",
+      tags: [this.userTag],
+      response: {
+        204: noContentSchema,
+      },
+      body: this.updateUserSchema,
     };
 
     return newSchema;
@@ -81,7 +96,40 @@ export class UsersDocs {
           userUrl: z.string().optional(),
           userEmail: z.string().email().optional(),
         }),
+        400: z.object({
+          message: z.string(),
+        }),
       },
+    };
+
+    return newSchema;
+  }
+  loginSchema(): Schema {
+    const newSchema: Schema = {
+      summary: "Loga um usuário",
+      description:
+        "Verifica se existe um usuário com o email e senha informados, e retorna um Token JWT para conecta-lo a aplicação.",
+      tags: [this.userTag],
+      response: {
+        200: z.object({
+          jwtToken: z.string(),
+        }),
+      },
+      body: this.userSchema,
+      security: [],
+    };
+
+    return newSchema;
+  }
+  logoffSchema(): Schema {
+    const newSchema: Schema = {
+      summary: "Desconecta um usuário",
+      description: "Desconecta o usuário atual da aplicação.",
+      tags: [this.userTag],
+      response: {
+        204: noContentSchema,
+      },
+      security: [],
     };
 
     return newSchema;
