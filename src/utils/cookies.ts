@@ -19,6 +19,6 @@ function removeUserEmailCookie(reply: FastifyReply) {
 function setUserEmailCookie(reply: FastifyReply, userEmail: string) {
   return reply.setCookie(userEmailCookieName, userEmail, {
     ...cookieOptions,
-    expires: dayjs().add(1, "day").toDate(),
+    expires: dayjs().add(1, "day").toDate(), // Expira em 24 horas
   });
 }

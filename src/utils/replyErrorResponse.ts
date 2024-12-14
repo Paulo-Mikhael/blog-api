@@ -34,18 +34,21 @@ export function replyErrorResponse(error: unknown, reply: FastifyReply) {
 
   if (error instanceof FastifyError) {
     console.error(error.stack);
-    const foreignKeys = error.options?.foreignKeys;
-    const uniqueFieldsErrorMessage = error.options?.uniqueFieldsErrorMessage;
 
     try {
       /* Caso a requisição tenha sido falha por dados incorretos do usuário,
       é lançado um erro personalizado para o cliente */
+
+      const foreignKeys = error.options?.foreignKeys;
+      const uniqueFieldsErrorMessage = error.options?.uniqueFieldsErrorMessage;
+
       verifyForeignKeyError(error.fastifyError, foreignKeys);
       verifyUniqueFieldsError(error.fastifyError, uniqueFieldsErrorMessage);
     } catch (error) {
       clientError(error);
     }
 
+    console.error(error.fastifyError.message);
     return reply.code(500).send({
       message: "Erro ao interagir com o banco de dados",
     });

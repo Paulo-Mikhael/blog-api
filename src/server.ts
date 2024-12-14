@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import fastifyMultipart from "@fastify/multipart";
 import {
+  createJsonSchemaTransformObject,
   jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
@@ -12,6 +13,8 @@ import fastifyCookie from "@fastify/cookie";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { replyErrorResponse } from "./utils/replyErrorResponse";
+import { userReturnSchema } from "./docs/components/userReturnSchema";
+import { userProfileReturnSchema } from "./docs/components/userProfileReturnSchema";
 
 const fastify = Fastify({
   logger: true,
@@ -52,6 +55,12 @@ fastify.register(fastifySwagger, {
     ],
   },
   transform: jsonSchemaTransform,
+  transformObject: createJsonSchemaTransformObject({
+    schemas: {
+      user: userReturnSchema,
+      userProfile: userProfileReturnSchema,
+    },
+  }),
 });
 fastify.register(fastifySwaggerUi, { routePrefix: "/docs" });
 

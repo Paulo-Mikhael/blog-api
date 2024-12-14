@@ -11,6 +11,7 @@ import { jsonWebToken } from "../utils/jsonWebToken";
 import { getUserOrThrow } from "../utils/getUserOrThrow";
 import { ClientError } from "../errors/ClientError";
 import { cookies } from "../utils/cookies";
+import { getDomain } from "../utils/getDomain";
 
 export class UserController extends Controller {
   private readonly userProfileController: UserProfileController;
@@ -126,22 +127,26 @@ export class UserController extends Controller {
       if (!userProfile) {
         return reply.code(200).send({ userEmail });
       }
+      const domain = getDomain(request);
 
       return reply
         .code(200)
-        .send({ userUrl: `/users/profile/${userProfile.name}` });
+        .send({ userUrl: `${domain}/users/profile/${userProfile.name}` });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
   }
   async login({ request, reply }: RouteParams) {
     try {
-      jsonWebToken.verifyExistentUser(request);
       const validatedBody = this.userService.validate(request.body, {
         strongPasswordValidation: false,
       });
+
+      const bodyEmail = validatedBody.email;
+      jsonWebToken.verifyExistentUser(request, bodyEmail);
+
       const user = await this.userService.login(
-        validatedBody.email,
+        bodyEmail,
         validatedBody.password
       );
       const userPayload = {

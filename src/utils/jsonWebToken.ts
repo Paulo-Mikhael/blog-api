@@ -54,9 +54,10 @@ function createJsonToken(
 async function verifyJsonToken(request: FastifyRequest) {
   const requestAuthorization = request.headers.authorization;
   const requestCookies = request.cookies;
-  const userEmail = requestCookies.userEmail;
+  // Nos cookies está o email do usuário logado
+  const cookieUserEmail = requestCookies.userEmail;
 
-  if (!userEmail) {
+  if (!cookieUserEmail) {
     throw new ClientError("Nenhum usuário logado", 400);
   }
 
@@ -76,7 +77,9 @@ async function verifyJsonToken(request: FastifyRequest) {
   const payload = jwt.verify(jwtToken, secretKey);
   const parsedPayload = userPayloadSchema.parse(payload);
   const user = await getUserOrThrow(parsedPayload.userId);
-  if (user.email !== userEmail) {
+
+  // Se o email extraído do token JWT for diferente do usuário logado
+  if (user.email !== cookieUserEmail) {
     throw new JsonWebTokenError(
       "Usuário negado. Insira o Bearer Token correto ou faça login novamente"
     );
@@ -85,11 +88,19 @@ async function verifyJsonToken(request: FastifyRequest) {
   return parsedPayload;
 }
 
-function verifyExistentUser(request: FastifyRequest) {
+function verifyExistentUser(request: FastifyRequest, bodyEmail: string) {
   const requestCookies = request.cookies;
-  const userEmail = requestCookies.userEmail;
+  const loggedUserEmail = requestCookies.userEmail;
 
-  if (userEmail) {
-    throw new ClientError("Já existe um usuário logado", 400);
+  // Se não tiver usuário logado
+  if (!loggedUserEmail) {
+    return;
   }
+
+  // Se não for o usuário atual
+  if (loggedUserEmail !== bodyEmail) {
+    return;
+  }
+
+  throw new ClientError("Usuário já está logado", 400);
 }

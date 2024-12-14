@@ -2,7 +2,7 @@ import z from "zod";
 import type { Schema } from "../types/Schema";
 import { userReturnSchema } from "./components/userReturnSchema";
 import { UserService } from "../services/UserService";
-import { noContentSchema } from "./schemas/NoContentSchema";
+import { noContentSchema } from "./schemas/noContentSchema";
 
 export class UsersDocs {
   private adminTag = "Admin";
@@ -100,6 +100,7 @@ export class UsersDocs {
           message: z.string(),
         }),
       },
+      security: [],
     };
 
     return newSchema;

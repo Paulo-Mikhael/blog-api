@@ -95,8 +95,7 @@ export class UserProfileModel extends Model<UserProfile> {
       .catch((error: FE) => {
         throw new FastifyError(error, {
           foreignKeys: ["userId"],
-          uniqueFieldsErrorMessage:
-            "O nome ou usuário especificados já existem",
+          uniqueFieldsErrorMessage: "Esse nome de usuário já existe",
         });
       });
 

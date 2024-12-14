@@ -6,6 +6,9 @@ import type { UserProfile } from "@prisma/client";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { Controller } from "./Controller";
 import { getUserProfileOrThrow } from "../utils/getUserProfileOrThrow";
+import { getDomain } from "../utils/getDomain";
+import { jsonWebToken } from "../utils/jsonWebToken";
+import { getUserOrThrow } from "../utils/getUserOrThrow";
 
 export class UserProfileController extends Controller {
   constructor(
@@ -39,29 +42,37 @@ export class UserProfileController extends Controller {
   }
   async create({ request, reply }: RouteParams) {
     try {
-      const validatedProfile = this.userProfileService.validate(request.body);
+      const { userId } = await jsonWebToken.verify(request);
+      const validatedProfile = await this.userProfileService.validate(
+        request.body
+      );
       const normalizedUserName = this.userProfileService
         .normalizeText(validatedProfile.name)
         .replaceAll(" ", "");
       const newProfile: UserProfile = {
         id: uuidV4(),
+        avatar: "",
+        userId,
         ...validatedProfile,
         name: normalizedUserName,
       };
       const { userProfile } = await this.userProfileModel.create(newProfile);
+      const domain = getDomain(request);
 
-      return reply
-        .code(200)
-        .send({ userUrl: `/users/profile/${userProfile.name}` });
+      return reply.code(200).send({
+        userUrl: `${domain}/users/profile/${userProfile.name}`,
+      });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
   }
   async delete({ request, reply }: RouteParams) {
     try {
-      const { id } = this.userProfileService.getParamId(request.params);
-      const profile = await getUserProfileOrThrow(id);
-      await this.userProfileModel.delete(profile.id);
+      const { userId } = await jsonWebToken.verify(request);
+      const user = await getUserOrThrow(userId);
+      const userProfile = await getUserProfileOrThrow(user.profile?.id);
+
+      await this.userProfileModel.delete(userProfile.id);
 
       return reply.code(204).send();
     } catch (error) {
@@ -70,15 +81,18 @@ export class UserProfileController extends Controller {
   }
   async update({ request, reply }: RouteParams) {
     try {
-      const { id } = this.userProfileService.getParamId(request.params);
+      const { userId } = await jsonWebToken.verify(request);
       const validatedBody = this.userProfileService.validate(request.body);
-      const requiredProfile = await getUserProfileOrThrow(id);
+      const user = await getUserOrThrow(userId);
+      const userProfile = await getUserProfileOrThrow(user.profile?.id);
 
       const newProfile: UserProfile = {
-        id: requiredProfile.id,
+        id: userProfile.id,
+        userId,
+        avatar: userProfile.avatar,
         ...validatedBody,
       };
-      await this.userProfileModel.update(id, newProfile);
+      await this.userProfileModel.update(userProfile.id, newProfile);
 
       return reply.code(204).send();
     } catch (error) {
