@@ -7,7 +7,9 @@ type SchemaResponse = {
     | z.ZodReadonly<z.ZodDefault<z.ZodString>>;
 };
 type SchemaBody = z.ZodObject<z.ZodRawShape>;
-type SchemaSecurity = readonly { [securityLabel: string]: readonly string[] }[];
+type SchemaSecurity = readonly {
+  [securityLabel: string]: readonly string[];
+}[];
 
 export type Schema = {
   summary: string;

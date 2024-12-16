@@ -2,6 +2,11 @@ import z from "zod";
 import { RequestService } from "./RequestService";
 
 export class UserProfileService extends RequestService {
+  public userProfileSchemaDocs = z.object({
+    name: z.string().optional(),
+    biography: z.string().optional(),
+  });
+
   public userProfileSchema = z.object({
     name: z
       .string({ message: this.requiredMessage })
@@ -17,8 +22,9 @@ export class UserProfileService extends RequestService {
     if (body && typeof body === "object") {
       objectBody = body;
     }
+    const validatedBodyItems = this.userProfileSchema.parse(objectBody);
     const validatedBody = {
-      ...this.userProfileSchema.parse(objectBody),
+      ...validatedBodyItems,
     };
 
     return validatedBody;

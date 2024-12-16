@@ -8,8 +8,8 @@ export class UsersDocs {
   private adminTag = "Admin";
   private userTag = "User";
   private userService = new UserService();
-  private userSchema = this.userService.userSchema;
-  private updateUserSchema = this.userService.updateUserSchema;
+  private userSchema = this.userService.userSchemaDocs;
+  private updateUserSchema = this.userService.updateUserSchemaDocs;
 
   getAllSchema(): Schema {
     const newSchema: Schema = {

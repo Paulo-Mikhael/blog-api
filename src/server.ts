@@ -13,14 +13,14 @@ import fastifyCookie from "@fastify/cookie";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { replyErrorResponse } from "./utils/replyErrorResponse";
-import { userReturnSchema } from "./docs/components/userReturnSchema";
-import { userProfileReturnSchema } from "./docs/components/userProfileReturnSchema";
+import { schemaDocs } from "./utils/schemaDocs";
 
 const fastify = Fastify({
   logger: true,
 });
 
 fastify.setErrorHandler((error, request, reply) => {
+  console.log(error);
   replyErrorResponse(error, reply);
 });
 
@@ -56,10 +56,7 @@ fastify.register(fastifySwagger, {
   },
   transform: jsonSchemaTransform,
   transformObject: createJsonSchemaTransformObject({
-    schemas: {
-      user: userReturnSchema,
-      userProfile: userProfileReturnSchema,
-    },
+    schemas: schemaDocs(),
   }),
 });
 fastify.register(fastifySwaggerUi, { routePrefix: "/docs" });

@@ -4,11 +4,12 @@ import z from "zod";
 import { userProfileReturnSchema } from "./components/userProfileReturnSchema";
 import { noContentSchema } from "./schemas/noContentSchema";
 import { infoMessageSchema } from "./schemas/infoMessageSchema";
+import { validationErrorSchema } from "./schemas/validationErrorSchema";
 
 export class UserProfileDocs {
   private userProfileTag = "User Profile";
   private userProfileService = new UserProfileService();
-  private userProfileSchema = this.userProfileService.userProfileSchema;
+  private userProfileSchema = this.userProfileService.userProfileSchemaDocs;
 
   getAllSchema(): Schema {
     const newSchema: Schema = {
@@ -33,6 +34,7 @@ export class UserProfileDocs {
         200: z.object({
           userProfile: userProfileReturnSchema,
         }),
+        400: validationErrorSchema,
         500: infoMessageSchema,
       },
       security: [],
@@ -48,6 +50,7 @@ export class UserProfileDocs {
         200: z.object({
           userUrl: z.string().describe("url do perfil do usuário"),
         }),
+        400: validationErrorSchema,
         500: infoMessageSchema,
       },
       body: this.userProfileSchema,

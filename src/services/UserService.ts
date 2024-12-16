@@ -7,13 +7,22 @@ import { ClientError } from "../errors/ClientError";
 import { specialCharacters } from "../data/specials_characteres";
 import { numbers } from "../data/numbers";
 import { UserModel } from "../models/UserModel";
-import { jsonWebToken } from "../utils/jsonWebToken";
 
 type BodyOptions = {
   strongPasswordValidation?: boolean;
 };
 
 export class UserService extends RequestService {
+  public userSchemaDocs = z.object({
+    email: z.string().optional(),
+    password: z.string().optional(),
+  });
+  public updateUserSchemaDocs = z.object({
+    newEmail: z.string().optional(),
+    oldPassword: z.string().optional(),
+    newPassword: z.string().optional(),
+  });
+
   public userSchema = z.object({
     email: z
       .string({ message: this.requiredMessage })
