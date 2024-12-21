@@ -4,9 +4,11 @@ import type z from "zod";
 type SchemaResponse = {
   [statusCode: number | string]:
     | z.ZodObject<z.ZodRawShape>
+    | z.ZodDefault<z.ZodObject<z.ZodRawShape>>
     | z.ZodReadonly<z.ZodDefault<z.ZodString>>;
 };
 type SchemaBody = z.ZodObject<z.ZodRawShape>;
+type SchemaParams = z.ZodObject<z.ZodRawShape>;
 type SchemaSecurity = readonly {
   [securityLabel: string]: readonly string[];
 }[];
@@ -18,4 +20,5 @@ export type Schema = {
   response?: SchemaResponse;
   body?: SchemaBody;
   security?: SchemaSecurity;
+  params?: SchemaParams;
 };

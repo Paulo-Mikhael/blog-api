@@ -14,6 +14,7 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { replyErrorResponse } from "./utils/replyErrorResponse";
 import { schemaDocs } from "./utils/schemaDocs";
+import z from "zod";
 
 const fastify = Fastify({
   logger: true,
@@ -56,7 +57,7 @@ fastify.register(fastifySwagger, {
   },
   transform: jsonSchemaTransform,
   transformObject: createJsonSchemaTransformObject({
-    schemas: schemaDocs(),
+    schemas: schemaDocs,
   }),
 });
 fastify.register(fastifySwaggerUi, { routePrefix: "/docs" });

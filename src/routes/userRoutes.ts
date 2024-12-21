@@ -44,6 +44,14 @@ export const userRoutes: FastifyPluginAsyncZod = async (app) => {
     schema: usersDocs.updateSchema(),
     handler: (request, reply) => user.update({ request, reply }),
   });
+  app.post("/users/profile", {
+    schema: usersDocs.createProfileSchema(),
+    handler: (request, reply) => user.createProfile({ request, reply }),
+  });
+  app.get("/users/profile/:name", {
+    schema: usersDocs.getByProfileNameSchema(),
+    handler: (request, reply) => user.getByProfileName({ request, reply }),
+  });
   app.post("/users/login", {
     schema: usersDocs.loginSchema(),
     handler: (request, reply) => user.login({ request, reply }),
@@ -52,10 +60,8 @@ export const userRoutes: FastifyPluginAsyncZod = async (app) => {
     schema: usersDocs.logoffSchema(),
     handler: (request, reply) => user.logoff({ request, reply }),
   });
-  app.post("/users/profile", (request, reply) => {
-    user.createProfile({ request, reply });
-  });
-  app.get("/users/profile/:name", (request, reply) => {
-    user.getByProfileName({ request, reply });
+  app.get("/users/relogin", {
+    schema: usersDocs.reloginSchema(),
+    handler: (request, reply) => user.relogin({ request, reply }),
   });
 };

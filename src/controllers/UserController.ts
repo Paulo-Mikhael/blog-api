@@ -2,6 +2,7 @@ import type { UserService } from "../services/UserService";
 import type { RouteParams } from "../types/RouteParams";
 import type { UserModel } from "../models/UserModel";
 import type { UserProfileService } from "../services/UserProfileService";
+import type { UserTokenPayload } from "../types/UserTokenPayload";
 import { UserProfileModel } from "../models/UserProfileModel";
 import { UserProfileController } from "./UserProfileController";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
@@ -11,7 +12,7 @@ import { jsonWebToken } from "../utils/jsonWebToken";
 import { getUserOrThrow } from "../utils/getUserOrThrow";
 import { ClientError } from "../errors/ClientError";
 import { cookies } from "../utils/cookies";
-import { getDomain } from "../utils/getDomain";
+import { getUserProfileOrThrow } from "../utils/getUserProfileOrThrow";
 
 export class UserController extends Controller {
   private readonly userProfileController: UserProfileController;
@@ -107,15 +108,8 @@ export class UserController extends Controller {
   }
   async getActualUser({ request, reply }: RouteParams) {
     try {
-      const userEmail = request.cookies.userEmail;
-      if (!userEmail) {
-        return reply.code(400).send({ message: "Nenhum usuário logado" });
-      }
-      const usersByEmail = await this.userModel.getByField({
-        field: "email",
-        value: userEmail,
-      });
-      const user = usersByEmail[0];
+      const { userEmail } = cookies.userEmail.get(request);
+      const user = await this.userModel.getByEmailAddress(userEmail);
 
       // Se entrar neste bloco é erro do servidor, porque os cookies devem retornar um usuário com um email que existe
       if (!user) {
@@ -123,15 +117,13 @@ export class UserController extends Controller {
           `Ocorreu um erro ao pegar o usuário de email ${userEmail}`
         );
       }
-      const userProfile = user.profile;
-      if (!userProfile) {
+      const userProfileId = user.profile?.id;
+      if (!userProfileId) {
         return reply.code(200).send({ userEmail });
       }
-      const domain = getDomain(request);
+      const userProfile = await getUserProfileOrThrow(userProfileId);
 
-      return reply
-        .code(200)
-        .send({ userUrl: `${domain}/users/profile/${userProfile.name}` });
+      return reply.code(200).send({ userProfile });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
@@ -149,7 +141,7 @@ export class UserController extends Controller {
         bodyEmail,
         validatedBody.password
       );
-      const userPayload = {
+      const userPayload: UserTokenPayload = {
         userId: user.id,
       };
       const { token } = jsonWebToken.create(userPayload);
@@ -212,6 +204,26 @@ export class UserController extends Controller {
       cookies.userEmail.remove(reply);
 
       return reply.code(204).send();
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async relogin({ request, reply }: RouteParams) {
+    try {
+      const { userEmail } = cookies.userEmail.get(request);
+      const user = await this.userModel.getByEmailAddress(userEmail);
+      if (!user) {
+        throw new ClientError("Usuário não encontrado");
+      }
+
+      const userPayload: UserTokenPayload = {
+        userId: user.id,
+      };
+
+      cookies.userEmail.set(reply, userEmail);
+      const { token } = jsonWebToken.create(userPayload);
+
+      return reply.code(200).send({ jwtToken: token });
     } catch (error) {
       replyErrorResponse(error, reply);
     }

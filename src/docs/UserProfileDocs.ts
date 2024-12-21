@@ -5,6 +5,8 @@ import { userProfileReturnSchema } from "./components/userProfileReturnSchema";
 import { noContentSchema } from "./schemas/noContentSchema";
 import { infoMessageSchema } from "./schemas/infoMessageSchema";
 import { validationErrorSchema } from "./schemas/validationErrorSchema";
+import { http } from "./schemas/http";
+import { jsonWebTokenErrorSchema } from "./schemas/jsonWebTokenErrorSchema";
 
 export class UserProfileDocs {
   private userProfileTag = "User Profile";
@@ -16,10 +18,12 @@ export class UserProfileDocs {
       summary: "Retorna todos os perfis de usuário",
       tags: [this.userProfileTag],
       response: {
-        200: z.object({
-          profiles: userProfileReturnSchema.array(),
-        }),
-        500: infoMessageSchema,
+        200: http.code200Schema(
+          z.object({
+            profiles: userProfileReturnSchema.array(),
+          })
+        ),
+        500: http.code500Schema(infoMessageSchema),
       },
       security: [],
     };
@@ -31,11 +35,13 @@ export class UserProfileDocs {
       summary: "Retorna um perfil de usuário por id",
       tags: [this.userProfileTag],
       response: {
-        200: z.object({
-          userProfile: userProfileReturnSchema,
-        }),
-        400: validationErrorSchema,
-        500: infoMessageSchema,
+        200: http.code200Schema(
+          z.object({
+            userProfile: userProfileReturnSchema,
+          })
+        ),
+        400: http.validationErrorSchema(validationErrorSchema),
+        500: http.code500Schema(infoMessageSchema),
       },
       security: [],
     };
@@ -47,11 +53,14 @@ export class UserProfileDocs {
       summary: "Cria um perfil para o usuário atual",
       tags: [this.userProfileTag],
       response: {
-        200: z.object({
-          userUrl: z.string().describe("url do perfil do usuário"),
-        }),
-        400: validationErrorSchema,
-        500: infoMessageSchema,
+        200: http.code200Schema(
+          z.object({
+            userUrl: z.string().describe("url do perfil do usuário"),
+          })
+        ),
+        400: http.validationErrorSchema(validationErrorSchema),
+        401: http.code401Schema(jsonWebTokenErrorSchema),
+        500: http.code500Schema(infoMessageSchema),
       },
       body: this.userProfileSchema,
     };
@@ -63,8 +72,9 @@ export class UserProfileDocs {
       summary: "Deleta o perfil do usuário atual",
       tags: [this.userProfileTag],
       response: {
-        204: noContentSchema,
-        500: infoMessageSchema,
+        204: http.code204Schema(noContentSchema),
+        401: http.code401Schema(jsonWebTokenErrorSchema),
+        500: http.code500Schema(infoMessageSchema),
       },
     };
 
@@ -75,8 +85,9 @@ export class UserProfileDocs {
       summary: "Atualiza o perfil do usuário atual",
       tags: [this.userProfileTag],
       response: {
-        204: noContentSchema,
-        500: infoMessageSchema,
+        204: http.code204Schema(noContentSchema),
+        401: http.code401Schema(jsonWebTokenErrorSchema),
+        500: http.code500Schema(infoMessageSchema),
       },
       body: this.userProfileSchema,
     };

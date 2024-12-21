@@ -1,3 +1,4 @@
+import type { UserTokenPayload } from "../types/UserTokenPayload";
 import type { FastifyRequest } from "fastify";
 import type { Time } from "../types/Time";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
@@ -27,7 +28,7 @@ function jwtSecretKey(): string {
 }
 
 function createJsonToken(
-  payload: { [x: string]: any },
+  payload: UserTokenPayload,
   time: Time = { hours: "24h" }
 ): { token: string } {
   userPayloadSchema.parse(payload);
@@ -58,7 +59,7 @@ async function verifyJsonToken(request: FastifyRequest) {
   const cookieUserEmail = requestCookies.userEmail;
 
   if (!cookieUserEmail) {
-    throw new ClientError("Nenhum usuário logado", 400);
+    throw new JsonWebTokenError("Nenhum usuário logado");
   }
 
   const secretKey = jwtSecretKey();
@@ -102,5 +103,8 @@ function verifyExistentUser(request: FastifyRequest, bodyEmail: string) {
     return;
   }
 
-  throw new ClientError("Usuário já está logado", 400);
+  throw new ClientError(
+    "Já existe uma sessão com este usuário, faça um 'relogin' ou inicie uma sessão com outro usuário",
+    401
+  );
 }
