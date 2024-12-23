@@ -5,6 +5,7 @@ import { queryTakeSkipSchema } from "./schemas/queryTakeSkipSchema";
 import { infoMessageSchema } from "./schemas/infoMessageSchema";
 import { PostService } from "../services/PostService";
 import { jsonWebTokenErrorSchema } from "./schemas/jsonWebTokenErrorSchema";
+import { postReturnSchema } from "./components/postReturnSchema";
 
 export class PostDocs {
   private postTag = "Post";
@@ -14,9 +15,27 @@ export class PostDocs {
   getAllSchema(): Schema {
     const newSchema: Schema = {
       summary: "Lista todos os posts",
-      description: "Retorna uma lista com todos os posts.",
+      description:
+        "Retorna uma lista com todos os posts cadastrados no sistema.",
       tags: [this.postTag],
       querystring: queryTakeSkipSchema,
+      response: {
+        200: http.code200Schema(
+          z.object({
+            posts: postReturnSchema.array(),
+          })
+        ),
+        500: http.code500Schema(infoMessageSchema),
+      },
+      security: [],
+    };
+
+    return newSchema;
+  }
+  getByIdSchema(): Schema {
+    const newSchema: Schema = {
+      summary: "Retorna um post pelo id",
+      tags: [this.postTag],
       response: {
         500: http.code500Schema(infoMessageSchema),
       },

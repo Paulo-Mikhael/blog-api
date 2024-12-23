@@ -15,6 +15,7 @@ import { queryTakeSkipSchema } from "./schemas/queryTakeSkipSchema";
 export class UsersDocs {
   private adminTag = "Admin";
   private userTag = "User";
+  private userProfileTag = "User Profile";
   private userService = new UserService();
   private userProfileService = new UserProfileService();
   private userSchema = this.userService.userSchemaDocs;
@@ -25,7 +26,7 @@ export class UsersDocs {
     const newSchema: Schema = {
       summary: "Lista todos os usuários",
       description:
-        "Essa rota retorna uma lista de todos os usuários cadastrados no sistema.",
+        "Retorna uma lista de todos os usuários cadastrados no sistema.",
       tags: [this.adminTag],
       querystring: queryTakeSkipSchema,
       response: {
@@ -44,7 +45,6 @@ export class UsersDocs {
   getByIdSchema(): Schema {
     const newSchema: Schema = {
       summary: "Retorna um usuário pelo ID",
-      description: "Essa rota retorna o usuário especificado pelo ID.",
       tags: [this.adminTag],
       response: {
         200: http.code200Schema(
@@ -178,8 +178,8 @@ export class UsersDocs {
   }
   getByProfileNameSchema(): Schema {
     const newSchema: Schema = {
-      summary: "Cria um perfil para o usuário atual",
-      tags: [this.userTag],
+      summary: "Retorna um perfil de usuário pelo nome",
+      tags: [this.userTag, this.userProfileTag],
       response: {
         200: http.code200Schema(
           z.object({
@@ -199,7 +199,7 @@ export class UsersDocs {
   createProfileSchema(): Schema {
     const newSchema: Schema = {
       summary: "Cria um perfil para o usuário atual",
-      tags: [this.userTag],
+      tags: [this.userTag, this.userProfileTag],
       response: {
         200: http.code200Schema(
           z.object({

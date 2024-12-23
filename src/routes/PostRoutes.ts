@@ -15,7 +15,10 @@ export const postRoutes: FastifyPluginAsyncZod = async (app) => {
     schema: postDocs.getAllSchema(),
     handler: (request, reply) => post.getAll({ request, reply }),
   });
-  app.get("/posts/:id", (request, reply) => post.getById({ request, reply }));
+  app.get("/posts/:id", {
+    schema: postDocs.getByIdSchema(),
+    handler: (request, reply) => post.getById({ request, reply }),
+  });
   app.post("/posts", {
     schema: postDocs.createSchema(),
     handler: (request, reply) => post.create({ request, reply }),

@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import fastifyMultipart from "@fastify/multipart";
 import {
   createJsonSchemaTransformObject,
+  hasZodFastifySchemaValidationErrors,
   jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
@@ -14,14 +15,12 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { replyErrorResponse } from "./utils/replyErrorResponse";
 import { schemaDocs } from "./utils/schemaDocs";
-import z from "zod";
 
 const fastify = Fastify({
   logger: true,
 });
 
-fastify.setErrorHandler((error, request, reply) => {
-  console.log(error);
+fastify.setErrorHandler((error, req, reply) => {
   replyErrorResponse(error, reply);
 });
 

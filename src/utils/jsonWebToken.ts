@@ -31,7 +31,7 @@ function createJsonToken(
   payload: UserTokenPayload,
   time: Time = { hours: "24h" }
 ): { token: string } {
-  userPayloadSchema.parse(payload);
+  const parsedPayload = userPayloadSchema.parse(payload);
 
   const hours = time.hours;
   const seconds = time.seconds;
@@ -47,7 +47,7 @@ function createJsonToken(
   const options = {
     expiresIn,
   };
-  const token = jwt.sign(payload, secretKey, options);
+  const token = jwt.sign(parsedPayload, secretKey, options);
 
   return { token };
 }
