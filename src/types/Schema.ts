@@ -9,6 +9,7 @@ type SchemaResponse = {
 };
 type SchemaBody = z.ZodObject<z.ZodRawShape>;
 type SchemaParams = z.ZodObject<z.ZodRawShape>;
+type SchemaQuery = z.ZodObject<z.ZodRawShape>;
 type SchemaSecurity = readonly {
   [securityLabel: string]: readonly string[];
 }[];
@@ -21,4 +22,5 @@ export type Schema = {
   body?: SchemaBody;
   security?: SchemaSecurity;
   params?: SchemaParams;
+  querystring?: SchemaQuery;
 };

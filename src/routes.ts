@@ -16,7 +16,7 @@ export function routes(
     return reply.redirect("/docs");
   });
 
-  fastifyZod.register(postRoutes);
   fastifyZod.register(userRoutes);
   fastifyZod.register(userProfileRoutes);
+  fastifyZod.register(postRoutes);
 }

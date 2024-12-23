@@ -7,6 +7,7 @@ import { infoMessageSchema } from "./schemas/infoMessageSchema";
 import { validationErrorSchema } from "./schemas/validationErrorSchema";
 import { http } from "./schemas/http";
 import { jsonWebTokenErrorSchema } from "./schemas/jsonWebTokenErrorSchema";
+import { queryTakeSkipSchema } from "./schemas/queryTakeSkipSchema";
 
 export class UserProfileDocs {
   private userProfileTag = "User Profile";
@@ -17,6 +18,7 @@ export class UserProfileDocs {
     const newSchema: Schema = {
       summary: "Retorna todos os perfis de usuário",
       tags: [this.userProfileTag],
+      querystring: queryTakeSkipSchema,
       response: {
         200: http.code200Schema(
           z.object({

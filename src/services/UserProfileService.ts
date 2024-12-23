@@ -2,12 +2,12 @@ import z from "zod";
 import { RequestService } from "./RequestService";
 
 export class UserProfileService extends RequestService {
-  public userProfileSchemaDocs = z.object({
+  public readonly userProfileSchemaDocs = z.object({
     name: z.string().optional(),
     biography: z.string().optional(),
   });
 
-  public userProfileSchema = z.object({
+  public readonly userProfileSchema = z.object({
     name: z
       .string({ message: this.requiredMessage })
       .min(1, { message: this.minLengthMessage() })

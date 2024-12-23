@@ -38,7 +38,7 @@ export class PostController extends Controller {
   }
   async create({ request, reply }: RouteParams) {
     try {
-      jsonWebToken.verify(request.headers.authorization);
+      await jsonWebToken.verify(request);
       const validatedPostBody = this.postService.validate(request.body);
       const newPost: CreatePost = {
         id: uuidV4(),
@@ -55,7 +55,7 @@ export class PostController extends Controller {
   }
   async delete({ request, reply }: RouteParams) {
     try {
-      jsonWebToken.verify(request.headers.authorization);
+      await jsonWebToken.verify(request);
       const { id } = this.postService.getParamId(request.params);
       const requiredPost = await getPostOrThrow(id);
 
@@ -67,7 +67,7 @@ export class PostController extends Controller {
   }
   async update({ request, reply }: RouteParams) {
     try {
-      jsonWebToken.verify(request.headers.authorization);
+      await jsonWebToken.verify(request);
       const { id } = this.postService.getParamId(request.params);
       const requiredPost = await getPostOrThrow(id);
       const postToUpdateBody = this.postService.validate(request.body);
@@ -87,7 +87,7 @@ export class PostController extends Controller {
   }
   async updateCover({ request, reply }: RouteParams) {
     try {
-      jsonWebToken.verify(request.headers.authorization);
+      await jsonWebToken.verify(request);
       const { id } = this.postService.getParamId(request.params);
       const postToUpdate = await getPostOrThrow(id);
       if (!request.isMultipart()) {

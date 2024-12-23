@@ -1,11 +1,10 @@
-import { v4 as uuidV4 } from "uuid";
 import db from "../src/db/dbConfig";
 import { deleteUserData } from "../src/utils/deleteUserData";
 
 async function main() {
   const userId = "5b067322-7aae-47d5-a0d7-8265307bbb5b";
-  const postId = uuidV4();
-  const userProfileId = uuidV4();
+  const postId = "5b067322-8are-47d5-a0d7-8265307bbb5b";
+  const userProfileId = "5b067322-2ggt-47d5-a0d7-8265307bbb5b";
 
   await deleteUserData(userId);
 
@@ -17,7 +16,21 @@ async function main() {
     create: {
       id: userId,
       email: "aaa@gmail.com",
-      password: "1234$",
+      password: Buffer.from("Uns@fe123#").toString("base64"),
+    },
+  });
+
+  await db.userProfile.upsert({
+    where: {
+      id: userProfileId,
+    },
+    update: {},
+    create: {
+      id: userProfileId,
+      name: "Usuário",
+      biography: "Usuário padrão da aplicação",
+      avatar: "",
+      userId: userId,
     },
   });
 
@@ -33,21 +46,7 @@ async function main() {
       content: "[Link para algo](https://algo)",
       slug: "meu-primeiro-post",
       cover: "",
-      authorId: userId,
-    },
-  });
-
-  await db.userProfile.upsert({
-    where: {
-      id: userProfileId,
-    },
-    update: {},
-    create: {
-      id: userProfileId,
-      name: "Usuário",
-      biography: "Usuário padrão da aplicação",
-      avatar: "",
-      userId: userId,
+      authorId: userProfileId,
     },
   });
 }

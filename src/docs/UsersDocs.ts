@@ -10,6 +10,7 @@ import { jsonWebTokenErrorSchema } from "./schemas/jsonWebTokenErrorSchema";
 import { clientErrorSchema } from "./schemas/clientErrorSchema";
 import { userProfileReturnSchema } from "./components/userProfileReturnSchema";
 import { http } from "./schemas/http";
+import { queryTakeSkipSchema } from "./schemas/queryTakeSkipSchema";
 
 export class UsersDocs {
   private adminTag = "Admin";
@@ -26,6 +27,7 @@ export class UsersDocs {
       description:
         "Essa rota retorna uma lista de todos os usuários cadastrados no sistema.",
       tags: [this.adminTag],
+      querystring: queryTakeSkipSchema,
       response: {
         200: http.code200Schema(
           z.object({

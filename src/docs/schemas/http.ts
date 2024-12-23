@@ -2,6 +2,7 @@ import type z from "zod";
 
 export const http = {
   code200Schema: httpCodeSchema("Requisição feita com sucesso"),
+  code201Schema: httpCodeSchema("Dados criados com sucesso"),
   code204Schema: httpNoContentSchema,
   code500Schema: httpCodeSchema("Erro interno no servidor"),
   code401Schema: httpCodeSchema("Acesso negado"),

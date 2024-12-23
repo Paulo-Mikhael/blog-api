@@ -13,11 +13,11 @@ type BodyOptions = {
 };
 
 export class UserService extends RequestService {
-  public userSchemaDocs = z.object({
+  public readonly userSchemaDocs = z.object({
     email: z.string().optional(),
     password: z.string().optional(),
   });
-  public updateUserSchemaDocs = z.object({
+  public readonly updateUserSchemaDocs = z.object({
     newEmail: z.string().optional(),
     oldPassword: z.string().optional(),
     newPassword: z.string().optional(),

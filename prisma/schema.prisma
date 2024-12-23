@@ -17,7 +17,6 @@ model User {
   id String @id
   email String @unique
   password String
-  posts Post[]
   profile UserProfile?
 }
 model Post {
@@ -29,7 +28,7 @@ model Post {
   category String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  author User @relation(fields: [authorId], references: [id])
+  author UserProfile @relation(fields: [authorId], references: [id])
   authorId String
 }
 model UserProfile {
@@ -39,4 +38,5 @@ model UserProfile {
   avatar String
   User User @relation(fields: [userId], references: [id])
   userId String @unique
+  posts Post[]
 }
