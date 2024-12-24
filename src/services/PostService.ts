@@ -5,9 +5,7 @@ interface ValidatePostReturn {
   title: string;
   content: string;
   category: string;
-  authorId: string;
   slug: string;
-  cover?: string;
 }
 
 export class PostService extends RequestService {
@@ -15,8 +13,6 @@ export class PostService extends RequestService {
     title: z.string().optional(),
     content: z.string().optional(),
     category: z.string().optional(),
-    authorId: z.string().optional(),
-    cover: z.string().optional(),
   });
   public readonly postSchema = z.object({
     title: z
@@ -29,8 +25,6 @@ export class PostService extends RequestService {
     category: z
       .string({ message: this.requiredMessage })
       .min(1, { message: this.minLengthMessage() }),
-    authorId: z.string({ message: this.requiredMessage }),
-    cover: z.string().optional(),
   });
 
   validate(body: unknown): ValidatePostReturn {

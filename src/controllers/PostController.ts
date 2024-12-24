@@ -7,6 +7,8 @@ import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { Controller } from "./Controller";
 import { jsonWebToken } from "../utils/jsonWebToken";
 import { getPostOrThrow } from "../utils/getPostOrThrow";
+import { getUserOrThrow } from "../utils/getUserOrThrow";
+import { ClientError } from "../errors/ClientError";
 
 export class PostController extends Controller {
   constructor(
@@ -31,19 +33,28 @@ export class PostController extends Controller {
       const { id } = this.postService.getParamId(request.params);
       const requiredPost = await getPostOrThrow(id);
 
-      return reply.code(200).send(requiredPost);
+      return reply.code(200).send({ post: requiredPost });
     } catch (error) {
       replyErrorResponse(error, reply);
     }
   }
   async create({ request, reply }: RouteParams) {
     try {
-      await jsonWebToken.verify(request);
+      const { userId } = await jsonWebToken.verify(request);
+      const user = await getUserOrThrow(userId);
+      if (!user.profile) {
+        throw new ClientError(
+          "O usuário precisa ter um perfil para criar posts",
+          406
+        );
+      }
+
       const validatedPostBody = this.postService.validate(request.body);
       const newPost: CreatePost = {
         id: uuidV4(),
         ...validatedPostBody,
-        cover: "",
+        authorId: user.profile.id,
+        cover: "https://http.cat/200",
       };
 
       const { post } = await this.postModel.create(newPost);
@@ -67,15 +78,20 @@ export class PostController extends Controller {
   }
   async update({ request, reply }: RouteParams) {
     try {
-      await jsonWebToken.verify(request);
+      const { userId } = await jsonWebToken.verify(request);
+      const user = await getUserOrThrow(userId);
+      if (!user.profile) {
+        throw new ClientError("O usuário atual não possui um perfil", 406);
+      }
+
       const { id } = this.postService.getParamId(request.params);
       const requiredPost = await getPostOrThrow(id);
       const postToUpdateBody = this.postService.validate(request.body);
-      const updatedCover = postToUpdateBody.cover;
       const newPost: CreatePost = {
         id,
         ...postToUpdateBody,
-        cover: updatedCover ? updatedCover : requiredPost.cover,
+        authorId: user.profile.id,
+        cover: requiredPost.cover,
       };
 
       await this.postModel.update(id, newPost);

@@ -24,7 +24,10 @@ export const postRoutes: FastifyPluginAsyncZod = async (app) => {
     handler: (request, reply) => post.create({ request, reply }),
   });
   app.delete("/posts/:id", (request, reply) => post.delete({ request, reply }));
-  app.put("/posts/:id", (request, reply) => post.update({ request, reply }));
+  app.put("/posts/:id", {
+    schema: postDocs.updateSchema(),
+    handler: (request, reply) => post.update({ request, reply }),
+  });
   app.put("/post-cover/:id", (request, reply) => {
     post.updateCover({ request, reply });
   });

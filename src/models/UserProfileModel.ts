@@ -3,7 +3,7 @@ import type { FieldParams } from "../types/FieldParams";
 import type { FastifyError as FE } from "fastify";
 import { Model } from "./Model";
 import db from "../db/dbConfig";
-import { FastifyError } from "../errors/FastifyError";
+import { PrismaError } from "../errors/PrismaError";
 import { returnSafeProfiles } from "../utils/returnSafeProfiles";
 import { returnSafeProfile } from "../utils/returnSafeProfile";
 
@@ -76,7 +76,7 @@ export class UserProfileModel extends Model<UserProfile> {
     const createdProfile = await db.userProfile
       .create({ data: userProfile })
       .catch((error: FE) => {
-        throw new FastifyError(error, {
+        throw new PrismaError(error, {
           foreignKeys: ["userId"],
           uniqueFieldsErrorMessage: "Esse nome de usuário já existe",
         });
@@ -93,7 +93,7 @@ export class UserProfileModel extends Model<UserProfile> {
     await db.userProfile
       .update({ where: { id }, data: newProfile })
       .catch((error: FE) => {
-        throw new FastifyError(error, {
+        throw new PrismaError(error, {
           foreignKeys: ["userId"],
           uniqueFieldsErrorMessage: "Esse nome de usuário já existe",
         });

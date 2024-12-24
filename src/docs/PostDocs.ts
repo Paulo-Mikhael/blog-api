@@ -6,6 +6,9 @@ import { infoMessageSchema } from "./schemas/infoMessageSchema";
 import { PostService } from "../services/PostService";
 import { jsonWebTokenErrorSchema } from "./schemas/jsonWebTokenErrorSchema";
 import { postReturnSchema } from "./components/postReturnSchema";
+import { clientErrorSchema } from "./schemas/clientErrorSchema";
+import { validationErrorSchema } from "./schemas/validationErrorSchema";
+import { noContentSchema } from "./schemas/noContentSchema";
 
 export class PostDocs {
   private postTag = "Post";
@@ -37,6 +40,12 @@ export class PostDocs {
       summary: "Retorna um post pelo id",
       tags: [this.postTag],
       response: {
+        200: http.code200Schema(
+          z.object({
+            post: postReturnSchema,
+          })
+        ),
+        404: http.code404Schema(clientErrorSchema),
         500: http.code500Schema(infoMessageSchema),
       },
       security: [],
@@ -55,11 +64,33 @@ export class PostDocs {
             postId: z.string().describe("Id do post criado"),
           })
         ),
+        400: http.validationErrorSchema(validationErrorSchema),
         401: http.code401Schema(jsonWebTokenErrorSchema),
+        406: http.clientErrorSchema(clientErrorSchema),
         500: http.code500Schema(infoMessageSchema),
       },
       body: this.postSchema,
-      security: [],
+    };
+
+    return newSchema;
+  }
+  updateSchema(): Schema {
+    const newSchema: Schema = {
+      summary: "Atualiza um post do usuário atual",
+      description: "Verifica o Bearer Token do usuário e cria um post.",
+      tags: [this.postTag],
+      params: z.object({
+        id: z.string(),
+      }),
+      response: {
+        204: http.code204Schema(noContentSchema),
+        400: http.validationErrorSchema(validationErrorSchema),
+        401: http.code401Schema(jsonWebTokenErrorSchema),
+        404: http.code404Schema(clientErrorSchema),
+        406: http.clientErrorSchema(clientErrorSchema),
+        500: http.code500Schema(infoMessageSchema),
+      },
+      body: this.postSchema,
     };
 
     return newSchema;

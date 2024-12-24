@@ -4,7 +4,7 @@ import type { FastifyError as FE } from "fastify";
 import type { FieldParams } from "../types/FieldParams";
 import db from "../db/dbConfig";
 import { Model } from "./Model";
-import { FastifyError } from "../errors/FastifyError";
+import { PrismaError } from "../errors/PrismaError";
 
 export class PostModel extends Model<Post> {
   async getAll(take = 50, skip = 0): Promise<Post[]> {
@@ -27,7 +27,7 @@ export class PostModel extends Model<Post> {
     const createdPost = await db.post
       .create({ data: post })
       .catch((error: FE) => {
-        throw new FastifyError(error, { foreignKeys: ["authorId"] });
+        throw new PrismaError(error, { foreignKeys: ["authorId"] });
       });
 
     return { post: createdPost };
@@ -44,7 +44,7 @@ export class PostModel extends Model<Post> {
         data: { ...newPost },
       })
       .catch((error) => {
-        throw new FastifyError(error, { foreignKeys: ["authorId"] });
+        throw new PrismaError(error, { foreignKeys: ["authorId"] });
       });
 
     return;

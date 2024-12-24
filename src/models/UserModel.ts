@@ -4,7 +4,7 @@ import type { FieldParams } from "../types/FieldParams";
 import db from "../db/dbConfig";
 import { deleteUserData } from "../utils/deleteUserData";
 import { Model } from "./Model";
-import { FastifyError } from "../errors/FastifyError";
+import { PrismaError } from "../errors/PrismaError";
 
 export class UserModel extends Model<User> {
   async getAll(take = 50, skip = 0) {
@@ -38,7 +38,7 @@ export class UserModel extends Model<User> {
     const createdUser = await db.user
       .create({ data: user })
       .catch((error: FE) => {
-        throw new FastifyError(error, {
+        throw new PrismaError(error, {
           uniqueFieldsErrorMessage: "O e-mail fornecido já está em uso",
         });
       });
@@ -54,7 +54,7 @@ export class UserModel extends Model<User> {
     await db.user
       .update({ where: { id: userId }, data: newUserData })
       .catch((error: FE) => {
-        throw new FastifyError(error, {
+        throw new PrismaError(error, {
           uniqueFieldsErrorMessage: "O e-mail fornecido já está em uso",
         });
       });

@@ -74,12 +74,12 @@ export class UserService extends RequestService {
 
   private verifyStrongPassword(password: string) {
     if (password.length < 8) {
-      throw new ClientError("A senha deve ter pelo menos 8 caracteres", 400);
+      throw new ClientError("A senha deve ter pelo menos 8 caracteres", 406);
     }
     if (itHas(password, upperLetters) === false) {
       throw new ClientError(
         "A senha precisa ter pelo menos uma letra maiúscula",
-        400
+        406
       );
     }
     if (itHas(password, numbers) === false) {
@@ -88,7 +88,7 @@ export class UserService extends RequestService {
     if (itHas(password, specialCharacters) === false) {
       throw new ClientError(
         "A senha precisa ter pelo menos um caractere especial",
-        400
+        406
       );
     }
   }

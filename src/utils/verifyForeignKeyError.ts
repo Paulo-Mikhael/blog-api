@@ -20,12 +20,12 @@ export function verifyForeignKeyError(
       if (invalidKeys.length > 0) {
         throw new ClientError(
           `As seguintes chaves estrangeiras são inválidas: ${invalidKeys.join(", ")}`,
-          400
+          406
         );
       }
     }
 
     // Erro genérico caso não seja encontrado algum nome de chave estrangeira
-    throw new ClientError("Chave estrangeira inválida/inexistente", 400);
+    throw new ClientError("Chave estrangeira inválida/inexistente", 406);
   }
 }

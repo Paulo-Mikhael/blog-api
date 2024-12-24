@@ -36,11 +36,12 @@ function getUserEmailCookie(request: FastifyRequest): { userEmail: string } {
   const requestCookies = request.cookies;
 
   try {
+    // Se o formato dos cookies não for válido, é tratado como se não houvesse usuário logado
     const validatedCookies = cookiesSchema.parse(requestCookies);
 
     return { userEmail: validatedCookies.userEmail };
   } catch (error) {
     console.error(error);
-    throw new ClientError("Nenhum usuário logado");
+    throw new ClientError("Nenhum usuário logado", 404);
   }
 }

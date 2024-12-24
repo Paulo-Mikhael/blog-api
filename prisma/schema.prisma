@@ -23,7 +23,7 @@ model Post {
   id String @id
   title String
   slug String
-  cover String?
+  cover String
   content String
   category String
   createdAt DateTime @default(now())

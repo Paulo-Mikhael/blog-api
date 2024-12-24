@@ -11,9 +11,9 @@ export function routes(
   // Fastify com provider que ajuda a validar os dados
   const fastifyZod = fastify.withTypeProvider<ZodTypeProvider>();
 
-  // Rota padrão
+  // Rota padrão (308 permanent redirect)
   fastifyZod.get("/", (request, reply) => {
-    return reply.redirect("/docs");
+    return reply.code(308).redirect("/docs");
   });
 
   fastifyZod.register(userRoutes);

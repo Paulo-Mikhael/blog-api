@@ -45,7 +45,7 @@ async function main() {
       category: "tutorial",
       content: "[Link para algo](https://algo)",
       slug: "meu-primeiro-post",
-      cover: "",
+      cover: "https://http.cat/200",
       authorId: userProfileId,
     },
   });

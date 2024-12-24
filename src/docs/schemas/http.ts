@@ -7,6 +7,7 @@ export const http = {
   code500Schema: httpCodeSchema("Erro interno no servidor"),
   code401Schema: httpCodeSchema("Acesso negado"),
   code404Schema: httpCodeSchema("Não encontrado"),
+  code409Schema: httpCodeSchema("Dados já existentes"),
   clientErrorSchema: httpCodeSchema("Erro pelo lado do cliente"),
   validationErrorSchema: httpCodeSchema(
     "Erro de validação dos dados da requisição"

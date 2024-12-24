@@ -52,6 +52,7 @@ export class UsersDocs {
             user: userReturnSchema,
           })
         ),
+        404: http.code404Schema(clientErrorSchema),
         500: http.code500Schema(infoMessageSchema),
       },
       security: [],
@@ -70,6 +71,9 @@ export class UsersDocs {
             jwtToken: z.string(),
           })
         ),
+        400: http.validationErrorSchema(validationErrorSchema),
+        406: http.clientErrorSchema(clientErrorSchema),
+        409: http.code409Schema(clientErrorSchema),
         500: http.code500Schema(infoMessageSchema),
       },
       body: this.userSchema,
@@ -122,7 +126,7 @@ export class UsersDocs {
             })
             .describe("Informações seguras sobre o usuário")
         ),
-        400: http.clientErrorSchema(
+        404: http.code404Schema(
           clientErrorSchema
             .describe("Nenhum usuário logado encontrado")
             .default({

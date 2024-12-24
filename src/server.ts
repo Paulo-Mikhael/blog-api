@@ -2,7 +2,6 @@ import Fastify from "fastify";
 import fastifyMultipart from "@fastify/multipart";
 import {
   createJsonSchemaTransformObject,
-  hasZodFastifySchemaValidationErrors,
   jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
@@ -13,14 +12,20 @@ import { routes } from "./routes";
 import fastifyCookie from "@fastify/cookie";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
-import { replyErrorResponse } from "./utils/replyErrorResponse";
 import { schemaDocs } from "./utils/schemaDocs";
+import { verifyFastifyClientError } from "./utils/verifyFastifyClientError";
+import { replyErrorResponse } from "./utils/replyErrorResponse";
 
 const fastify = Fastify({
   logger: true,
 });
 
 fastify.setErrorHandler((error, req, reply) => {
+  try {
+    verifyFastifyClientError(error);
+  } catch (err) {
+    replyErrorResponse(err, reply);
+  }
   replyErrorResponse(error, reply);
 });
 
