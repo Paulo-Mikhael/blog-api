@@ -3,7 +3,6 @@ import z from "zod";
 import { ClientError } from "../errors/ClientError";
 import { JsonWebTokenError } from "jsonwebtoken";
 import { PrismaError } from "../errors/PrismaError";
-import { ResponseSerializationError } from "fastify-type-provider-zod";
 import { verifyFastifyClientError } from "./verifyFastifyClientError";
 
 export function replyErrorResponse(error: unknown, reply: FastifyReply) {
@@ -14,13 +13,6 @@ export function replyErrorResponse(error: unknown, reply: FastifyReply) {
 
     return reply.code(error.statusCode).send({
       message: error.message,
-    });
-  }
-
-  if (error instanceof ResponseSerializationError) {
-    console.error(error.message, error.cause.issues);
-    return reply.code(500).send({
-      message: "Os dados recebidos não combinam com a documentação",
     });
   }
 

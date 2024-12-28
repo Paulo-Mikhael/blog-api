@@ -13,6 +13,8 @@ type SchemaQuery = z.ZodObject<z.ZodRawShape>;
 type SchemaSecurity = readonly {
   [securityLabel: string]: readonly string[];
 }[];
+type RequestConsume = "multipart/form-data";
+type SchemaConsumes = RequestConsume[];
 
 export type Schema = {
   summary: string;
@@ -23,4 +25,5 @@ export type Schema = {
   security?: SchemaSecurity;
   params?: SchemaParams;
   querystring?: SchemaQuery;
+  consumes?: SchemaConsumes;
 };

@@ -3,7 +3,7 @@ import { pipeline } from "node:stream/promises";
 import type { MultipartFile } from "@fastify/multipart";
 import { getFileDirectoryConfig } from "./getFileDirectoryConfigs";
 import { ClientError } from "../errors/ClientError";
-import { fileSize } from "../server";
+import { fileSize } from "./fastifyServices";
 
 export async function createOrDeleteFile(
   fastifyMultipartFile: MultipartFile
