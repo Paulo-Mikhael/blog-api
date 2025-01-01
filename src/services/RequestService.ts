@@ -3,6 +3,7 @@ import z from "zod";
 import { ClientError } from "../errors/ClientError";
 import { validateFileType } from "../utils/validateFileType";
 import { createOrDeleteFile } from "../utils/createOrDeleteFile";
+import { getFileType } from "../utils/getFileType";
 
 export class RequestService {
   public readonly requiredMessage = "Propriedade inválida ou inexistente";
@@ -50,17 +51,20 @@ export class RequestService {
       skip,
     };
   }
-  async uploadFile(requestFormData: FormData): Promise<{ url: string }> {
-    const file = requestFormData.get("file");
-
-    if (!file || !(file instanceof File)) {
+  async uploadFile(
+    fastifyFile: MultipartFile | undefined
+  ): Promise<{ url: string }> {
+    const file = fastifyFile?.file;
+    if (!file) {
       throw new ClientError("Nenhum arquivo anexado", 400);
     }
-    if (validateFileType(file.type) === false) {
+
+    const fileType = getFileType(fastifyFile.mimetype);
+    if (validateFileType(fileType) === false) {
       throw new ClientError("Insira um arquivo de imagem", 415);
     }
 
-    const { url } = await createOrDeleteFile(file);
+    const { url } = await createOrDeleteFile(fastifyFile);
 
     return { url };
   }

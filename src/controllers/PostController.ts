@@ -83,7 +83,7 @@ export class PostController extends Controller {
       const { userId } = await jsonWebToken.verify(request);
       const user = await getUserOrThrow(userId);
       if (!user.profile) {
-        throw new ClientError("O usuário atual não possui um perfil", 406);
+        throw new ClientError("O usuário atual não possui um perfil.", 406);
       }
 
       const { id } = this.postService.getParamId(request.params);
@@ -114,8 +114,8 @@ export class PostController extends Controller {
         });
       }
 
-      const formData = await request.formData();
-      const { url } = await this.postService.uploadFile(formData);
+      const file = await request.file();
+      const { url } = await this.postService.uploadFile(file);
 
       await this.postModel.updateCover(postToUpdate.id, url);
 

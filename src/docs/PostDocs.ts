@@ -94,7 +94,10 @@ export class PostDocs extends Docs {
           }),
           400: http.validationErrorSchema,
           401: http.tokenJWTErrorSchema,
-          406: http.clientErrorSchema,
+          406: http.clientErrorSchema(
+            "Perfil inexistente",
+            "O usuário precisa ter um perfil para criar posts"
+          ),
           500: http.code500Schema,
         },
         requestBody: requestBody.createPost,
@@ -120,7 +123,10 @@ export class PostDocs extends Docs {
           400: http.validationErrorSchema,
           401: http.tokenJWTErrorSchema,
           404: http.code404Schema,
-          406: http.clientErrorSchema,
+          406: http.clientErrorSchema(
+            "Perfil inexistente",
+            "O usuário atual não possui um perfil."
+          ),
           500: http.code500Schema,
         },
         requestBody: requestBody.createPost,
@@ -145,7 +151,6 @@ export class PostDocs extends Docs {
           204: http.code204Schema,
           401: http.tokenJWTErrorSchema,
           404: http.code404Schema,
-          406: http.clientErrorSchema,
           500: http.code500Schema,
         },
       },
@@ -166,9 +171,26 @@ export class PostDocs extends Docs {
           },
         ],
         responses: {
-          204: http.code204Schema,
+          200: http.code200Schema({
+            imageUrl: {
+              type: "string",
+              format: "url",
+            },
+          }),
+          400: http.clientErrorSchema(
+            "Requisição inválida",
+            "Requisição inválida. Precisa-se ser do tipo 'multipart/form-data'"
+          ),
           401: http.tokenJWTErrorSchema,
           404: http.code404Schema,
+          413: http.clientErrorSchema(
+            "Arquivo maior que 1,7mb",
+            "Tamanho máximo de arquivo excedido"
+          ),
+          415: http.clientErrorSchema(
+            "Arquivo inválido",
+            "Insira um arquivo de imagem"
+          ),
           500: http.code500Schema,
         },
         requestBody: requestBody.updatePostCover,

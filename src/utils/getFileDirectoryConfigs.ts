@@ -1,5 +1,6 @@
 import type { MultipartFile } from "@fastify/multipart";
 import { v4 as uuidV4 } from "uuid";
+import { getFileType } from "./getFileType";
 
 interface FileDirectoryConfigReturn {
   tempPath: string;
@@ -7,13 +8,15 @@ interface FileDirectoryConfigReturn {
   newFileName: string;
 }
 
-export function getFileDirectoryConfig(file: File): FileDirectoryConfigReturn {
+export function getFileDirectoryConfig(
+  file: MultipartFile
+): FileDirectoryConfigReturn {
   const folder = "uploads";
-  const fileType = file.type.replace("image/", "");
+  const fileType = getFileType(file.mimetype);
 
   const newFileName = `${uuidV4()}.${fileType}`;
 
-  const tempPath = `${folder}/${file.name}`;
+  const tempPath = `${folder}/${file.filename}`;
   const newPath = `${folder}/${newFileName}`;
 
   return {

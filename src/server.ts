@@ -3,7 +3,6 @@ import { routes } from "./routes";
 import { verifyFastifyClientError } from "./utils/verifyFastifyClientError";
 import { replyErrorResponse } from "./utils/replyErrorResponse";
 import { swagger } from "./utils/fastifySwagger";
-import { fastifyServices, fileSize } from "./utils/fastifyServices";
 import path from "node:path";
 import fastifyCookie from "@fastify/cookie";
 import fastifyMultipart from "@fastify/multipart";
@@ -30,8 +29,8 @@ const staticFilesConfig = {
   prefix: "/images/",
 };
 const multipartFilesConfig = {
-  limits: { fileSize },
-  attachFieldsToBody: true,
+  // O limite real é tratado em "createOrDeleteFile.ts"
+  limits: { fileSize: 3000000 },
 };
 
 // Servindo arquivos estáticos

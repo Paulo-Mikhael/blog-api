@@ -1,18 +1,9 @@
 import type { RequestBodyObject } from "../../types/RequestBodyObject";
 import type { RequiredPropertiesObject } from "../../types/RequiredPropertiesObject";
 import { PostService } from "../../services/PostService";
+import { updateFileSchema } from "../../data/update_file_schema";
 
 const postService = new PostService();
-const updateFileSchema: RequiredPropertiesObject = {
-  properties: {
-    file: {
-      type: "string",
-      format: "binary", // Necessário para indicar upload de arquivo no Swagger
-      description: "Imagem para upload",
-    },
-  },
-  requiredProperties: ["file"],
-};
 
 export const requestBody = {
   createPost: bodyObject(postService.postSchemaDocs),

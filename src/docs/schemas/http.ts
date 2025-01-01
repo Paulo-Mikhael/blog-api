@@ -12,7 +12,7 @@ export const http = {
   code404Schema: httpMessageSchema("Não encontrado", "Nada foi encontrado"),
   code409Schema: httpCodeSchema("Dados já existentes"),
   code500Schema: httpMessageSchema("Erro interno no servidor"),
-  clientErrorSchema: httpMessageSchema("Erro pelo lado do cliente"),
+  clientErrorSchema: clientErrorMessageSchema(),
   validationErrorSchema: httpValidationErrorSchema(
     "Erro de validação dos dados da requisição"
   ),
@@ -60,6 +60,24 @@ function httpMessageSchema(
       example: exampleMessage,
     },
   });
+}
+function clientErrorMessageSchema() {
+  return (schemaMessage?: string, example?: string): ResponseObject => {
+    let message = "Erro pelo lado do cliente";
+    if (schemaMessage) message = schemaMessage;
+
+    const httpSchema = httpCodeSchema(message);
+
+    let exampleMessage = message;
+    if (example) exampleMessage = example;
+
+    return httpSchema({
+      message: {
+        type: "string",
+        example: exampleMessage,
+      },
+    });
+  };
 }
 
 function httpJWTErrorSchema(
