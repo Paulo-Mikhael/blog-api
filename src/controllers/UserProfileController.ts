@@ -6,9 +6,9 @@ import type { UserProfile } from "@prisma/client";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { Controller } from "./Controller";
 import { getUserProfileOrThrow } from "../utils/getUserProfileOrThrow";
-import { getDomain } from "../utils/getDomain";
 import { jsonWebToken } from "../utils/jsonWebToken";
 import { getUserOrThrow } from "../utils/getUserOrThrow";
+import { appDomain } from "../data/app_domain";
 
 export class UserProfileController extends Controller {
   constructor(
@@ -57,10 +57,9 @@ export class UserProfileController extends Controller {
         name: normalizedUserName,
       };
       const { userProfile } = await this.userProfileModel.create(newProfile);
-      const domain = getDomain(request);
 
-      return reply.code(200).send({
-        userUrl: `${domain}/users/profile/${userProfile.name}`,
+      return reply.code(201).send({
+        userUrl: `${appDomain}/users/profile/${userProfile.name}`,
       });
     } catch (error) {
       replyErrorResponse(error, reply);

@@ -105,6 +105,6 @@ function verifyExistentUser(request: FastifyRequest, bodyEmail: string) {
 
   throw new ClientError(
     "Já existe uma sessão com este usuário, faça um 'relogin' ou inicie uma sessão com outro usuário",
-    401
+    403
   );
 }

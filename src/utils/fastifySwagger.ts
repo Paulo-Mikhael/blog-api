@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { paths } from "./paths";
-import { schemas } from "./schemas";
+import { schemas } from "../data/schemas";
 
 export const swagger: FastifyPluginAsync = async (fastify) => {
   // Swagger formato openapi

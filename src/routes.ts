@@ -12,7 +12,7 @@ export function routes(
     return reply.code(308).redirect("/docs");
   });
 
-  // fastify.register(userRoutes);
+  fastify.register(userRoutes);
   // fastify.register(userProfileRoutes);
   fastify.register(postRoutes);
 }

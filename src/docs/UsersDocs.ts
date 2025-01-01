@@ -1,240 +1,264 @@
-import z from "zod";
-import type { Schema } from "../types/Schema";
-import { userReturnSchema } from "./components/userReturnSchema";
-import { UserService } from "../services/UserService";
-import { noContentSchema } from "./schemas/noContentSchema";
-import { validationErrorSchema } from "./schemas/validationErrorSchema";
-import { infoMessageSchema } from "./schemas/infoMessageSchema";
-import { UserProfileService } from "../services/UserProfileService";
-import { jsonWebTokenErrorSchema } from "./schemas/jsonWebTokenErrorSchema";
-import { clientErrorSchema } from "./schemas/clientErrorSchema";
-import { userProfileReturnSchema } from "./components/userProfileReturnSchema";
 import { http } from "./schemas/http";
-import { queryTakeSkipSchema } from "./schemas/queryTakeSkipSchema";
+import type { PathItemObject } from "../types/PathItemObject";
+import { Docs, type RoutesDocs } from "../models/Docs";
 
-export class UsersDocs {
+export class UsersDocs extends Docs {
   private adminTag = "Admin";
   private userTag = "User";
   private userProfileTag = "User Profile";
-  private userService = new UserService();
-  private userProfileService = new UserProfileService();
-  private userSchema = this.userService.userSchemaDocs;
-  private updateUserSchema = this.userService.updateUserSchemaDocs;
-  private userProfileSchemaDocs = this.userProfileService.userProfileSchemaDocs;
+  public routesDocs: RoutesDocs = [
+    {
+      path: "/admin/users",
+      routeDocsArray: [this.getAllSchema()],
+    },
+  ];
 
-  getAllSchema(): Schema {
-    const newSchema: Schema = {
-      summary: "Lista todos os usuários",
-      description:
-        "Retorna uma lista de todos os usuários cadastrados no sistema.",
-      tags: [this.adminTag],
-      querystring: queryTakeSkipSchema,
-      response: {
-        200: http.code200Schema(
-          z.object({
-            users: userReturnSchema.array(),
-          })
-        ),
-        500: http.code500Schema(infoMessageSchema),
-      },
-      security: [],
-    };
-
-    return newSchema;
-  }
-  getByIdSchema(): Schema {
-    const newSchema: Schema = {
-      summary: "Retorna um usuário pelo ID",
-      tags: [this.adminTag],
-      response: {
-        200: http.code200Schema(
-          z.object({
-            user: userReturnSchema,
-          })
-        ),
-        404: http.code404Schema(clientErrorSchema),
-        500: http.code500Schema(infoMessageSchema),
-      },
-      security: [],
-    };
-
-    return newSchema;
-  }
-  createSchema(): Schema {
-    const newSchema: Schema = {
-      summary: "Cadastra um usuário",
-      description: "Cria um novo usuário e retorna um Json Web Token.",
-      tags: [this.userTag],
-      response: {
-        200: http.code200Schema(
-          z.object({
-            jwtToken: z.string(),
-          })
-        ),
-        400: http.validationErrorSchema(validationErrorSchema),
-        406: http.clientErrorSchema(clientErrorSchema),
-        409: http.code409Schema(clientErrorSchema),
-        500: http.code500Schema(infoMessageSchema),
-      },
-      body: this.userSchema,
-      security: [],
-    };
-
-    return newSchema;
-  }
-  deleteSchema(): Schema {
-    const newSchema: Schema = {
-      summary: "Deleta o usuário atual",
-      description:
-        "Verifica o Bearer Token do usuário logado e exclui o usuário.",
-      tags: [this.userTag],
-      response: {
-        204: http.code204Schema(noContentSchema),
-        500: http.code500Schema(infoMessageSchema),
+  getAllSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Lista todos os usuários",
+        description:
+          "Retorna uma lista de todos os usuários cadastrados no sistema.",
+        tags: [this.adminTag],
+        responses: {
+          200: http.code200Schema({
+            users: {
+              type: "array",
+              items: {
+                $ref: "#/components/schemas/User",
+              },
+            },
+          }),
+          500: http.code500Schema,
+        },
+        security: [],
       },
     };
 
     return newSchema;
   }
-  updateSchema(): Schema {
-    const newSchema: Schema = {
-      summary: "Atualiza os dados do usuário atual",
-      description:
-        "Verifica o Bearer Token do usuário logado e atualiza para os dados informados no corpo da requisição.",
-      tags: [this.userTag],
-      response: {
-        204: http.code204Schema(noContentSchema),
-        500: http.code500Schema(infoMessageSchema),
+  getByIdSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Retorna um usuário pelo ID",
+        tags: [this.adminTag],
+        parameters: [
+          {
+            $ref: "#/components/parameters/ParameterId",
+          },
+        ],
+        responses: {
+          200: http.code200Schema({
+            user: {
+              type: "string",
+            },
+          }),
+          404: http.code404Schema,
+          500: http.code500Schema,
+        },
+        security: [],
       },
-      body: this.updateUserSchema,
     };
 
     return newSchema;
   }
-  getActualSchema(): Schema {
-    const newSchema: Schema = {
-      summary: "Retorna o usuário atual",
-      description:
-        "Verifica o Bearer Token do usuário logado e retorna o perfil de usuário ou apenas o email.",
-      tags: [this.userTag],
-      response: {
-        200: http.code200Schema(
-          z
-            .object({
-              userProfile: userProfileReturnSchema.optional(),
-              userEmail: z.string().email().optional(),
-            })
-            .describe("Informações seguras sobre o usuário")
-        ),
-        404: http.code404Schema(
-          clientErrorSchema
-            .describe("Nenhum usuário logado encontrado")
-            .default({
-              message: "Nenhum usuário logado",
-            })
-        ),
-        500: http.code500Schema(infoMessageSchema),
+  createSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Cadastra um usuário",
+        description: "Cria um novo usuário e retorna um Json Web Token.",
+        tags: [this.userTag],
+        responses: {
+          200: http.code200Schema({
+            jwtToken: {
+              type: "string",
+            },
+          }),
+          400: http.validationErrorSchema,
+          406: http.clientErrorSchema(
+            "Senha fraca",
+            "A senha precisa ter pelo menos 8 caracteres."
+          ),
+          409: http.clientErrorSchema(
+            "Conflito com o banco de dados",
+            "Usuário já existente"
+          ),
+          500: http.code500Schema,
+        },
+        // body: this.userSchema,
+        security: [],
       },
-      security: [],
     };
 
     return newSchema;
   }
-  loginSchema(): Schema {
-    const newSchema: Schema = {
-      summary: "Loga um usuário",
-      description:
-        "Verifica se existe um usuário com o email e senha informados, e retorna um Token JWT para conecta-lo a aplicação.",
-      tags: [this.userTag],
-      response: {
-        200: http.code200Schema(
-          z.object({
-            jwtToken: z.string(),
-          })
-        ),
-        400: http.validationErrorSchema(validationErrorSchema),
-        401: http.clientErrorSchema(
-          clientErrorSchema.default({
-            message: "Não foi possível fazer o login",
-          })
-        ),
-        500: http.code500Schema(infoMessageSchema),
+  deleteSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Deleta o usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário logado e exclui o usuário.",
+        tags: [this.userTag],
+        responses: {
+          204: http.code204Schema,
+          500: http.code500Schema,
+        },
       },
-      body: this.userSchema,
-      security: [],
     };
 
     return newSchema;
   }
-  logoffSchema(): Schema {
-    const newSchema: Schema = {
-      summary: "Desconecta o usuário",
-      description: "Desconecta o usuário atual da aplicação.",
-      tags: [this.userTag],
-      response: {
-        204: http.code204Schema(noContentSchema),
-        500: http.code500Schema(infoMessageSchema),
+  updateSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Atualiza os dados do usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário logado e atualiza para os dados informados no corpo da requisição.",
+        tags: [this.userTag],
+        responses: {
+          204: http.code204Schema,
+          500: http.code500Schema,
+        },
+        // body: this.updateUserSchema,
       },
-      security: [],
     };
 
     return newSchema;
   }
-  getByProfileNameSchema(): Schema {
-    const newSchema: Schema = {
-      summary: "Retorna um perfil de usuário pelo nome",
-      tags: [this.userTag, this.userProfileTag],
-      response: {
-        200: http.code200Schema(
-          z.object({
-            userProfile: userProfileReturnSchema,
-          })
-        ),
-        404: http.code404Schema(clientErrorSchema),
-        500: http.code500Schema(infoMessageSchema),
+  getActualSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Retorna o usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário logado e retorna o perfil de usuário ou apenas o email.",
+        tags: [this.userTag],
+        responses: {
+          200: http.code200Schema({
+            userProfile: {
+              type: "string",
+            },
+            userEmail: {
+              type: "string",
+              format: "email",
+            },
+          }),
+          404: http.code404Schema,
+          500: http.code500Schema,
+        },
+        security: [],
       },
-      params: z.object({
-        name: z.string(),
-      }),
     };
 
     return newSchema;
   }
-  createProfileSchema(): Schema {
-    const newSchema: Schema = {
-      summary: "Cria um perfil para o usuário atual",
-      tags: [this.userTag, this.userProfileTag],
-      response: {
-        200: http.code200Schema(
-          z.object({
-            userUrl: z.string().describe("url do perfil do usuário"),
-          })
-        ),
-        400: http.validationErrorSchema(validationErrorSchema),
-        401: http.code401Schema(jsonWebTokenErrorSchema),
-        500: http.code500Schema(infoMessageSchema),
+  loginSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Loga um usuário",
+        description:
+          "Verifica se existe um usuário com o email e senha informados, e retorna um Token JWT para conecta-lo a aplicação.",
+        tags: [this.userTag],
+        responses: {
+          200: http.code200Schema({
+            jwtToken: {
+              type: "string",
+            },
+          }),
+          400: http.validationErrorSchema,
+          403: http.clientErrorSchema(
+            "Sessão de usuário ativa",
+            "Faça um 'relogin' ou inicie uma sessão com outro usuário"
+          ),
+          500: http.code500Schema,
+        },
+        // body: this.userSchema,
+        security: [],
       },
-      body: this.userProfileSchemaDocs,
     };
 
     return newSchema;
   }
-  reloginSchema(): Schema {
-    const newSchema: Schema = {
-      summary: "Reinicia a sessão atual do usuário",
-      description:
-        "Reinicia a sessão atual do usuário e retorna um novo Bearer Token",
-      tags: [this.userTag],
-      response: {
-        200: http.code200Schema(
-          z.object({
-            jwtToken: z.string().describe("Novo Bearer Token do usuário"),
-          })
-        ),
-        400: http.clientErrorSchema(clientErrorSchema),
-        500: http.code500Schema(infoMessageSchema),
+  logoffSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Desconecta o usuário",
+        description: "Desconecta o usuário atual da aplicação.",
+        tags: [this.userTag],
+        responses: {
+          204: http.code204Schema,
+          500: http.code500Schema,
+        },
+        security: [],
       },
-      security: [],
+    };
+
+    return newSchema;
+  }
+  getByProfileNameSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Retorna um perfil de usuário pelo nome",
+        tags: [this.userTag, this.userProfileTag],
+        responses: {
+          200: http.code200Schema({
+            userProfile: {
+              type: "string",
+            },
+          }),
+          404: http.code404Schema,
+          500: http.code500Schema,
+        },
+      },
+    };
+
+    return newSchema;
+  }
+  createProfileSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Cria um perfil para o usuário atual",
+        tags: [this.userTag, this.userProfileTag],
+        responses: {
+          201: http.code201Schema({
+            userUrl: {
+              type: "string",
+              format: "url",
+            },
+          }),
+          400: http.validationErrorSchema,
+          403: http.clientErrorSchema(
+            "Sessão de usuário ativa",
+            "Faça um 'relogin' ou inicie uma sessão com outro usuário"
+          ),
+          500: http.code500Schema,
+        },
+        // body: this.userProfileSchemaDocs,
+      },
+    };
+
+    return newSchema;
+  }
+  reloginSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Reinicia a sessão atual do usuário",
+        description:
+          "Reinicia a sessão atual do usuário e retorna um novo Bearer Token",
+        tags: [this.userTag],
+        responses: {
+          200: http.code200Schema({
+            jwtToken: {
+              type: "string",
+            },
+          }),
+          400: http.clientErrorSchema(
+            "Requisição inválida",
+            "Usuário inexistente"
+          ),
+          500: http.code500Schema,
+        },
+        security: [],
+      },
     };
 
     return newSchema;
