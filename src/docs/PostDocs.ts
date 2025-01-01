@@ -1,17 +1,26 @@
 import { http } from "./schemas/http";
-import { Docs, type RouteDocs } from "../models/Docs";
+import { Docs, type RoutesDocs } from "../models/Docs";
 import type { PathItemObject } from "../types/PathItemObject";
+import { requestBody } from "./schemas/requestBody";
 
 export class PostDocs extends Docs {
   private postTag = "Post";
-  public routesDocs: RouteDocs = [
+  public routesDocs: RoutesDocs = [
     {
       path: "/posts",
-      routeDocs: [this.getAllSchema(), this.createSchema()],
+      routeDocsArray: [this.getAllSchema(), this.createSchema()],
     },
     {
-      path: "/post/:id",
-      routeDocs: [this.getByIdSchema()],
+      path: "/posts/{id}",
+      routeDocsArray: [
+        this.getByIdSchema(),
+        this.updateSchema(),
+        this.deleteSchema(),
+      ],
+    },
+    {
+      path: "/post-cover/{id}",
+      routeDocsArray: [this.updateCoverSchema()],
     },
   ];
 
@@ -33,10 +42,10 @@ export class PostDocs extends Docs {
         },
         parameters: [
           {
-            $ref: "#/components/parameters/TakeQuery",
+            $ref: "#/components/parameters/QueryTake",
           },
           {
-            $ref: "#/components/parameters/SkipQuery",
+            $ref: "#/components/parameters/QuerySkip",
           },
         ],
         security: [],
@@ -50,6 +59,11 @@ export class PostDocs extends Docs {
       get: {
         summary: "Retorna um post pelo id",
         tags: [this.postTag],
+        parameters: [
+          {
+            $ref: "#/components/parameters/ParameterId",
+          },
+        ],
         responses: {
           200: http.code200Schema({
             post: {
@@ -78,78 +92,86 @@ export class PostDocs extends Docs {
               format: "uuid",
             },
           }),
-          // 400: http.validationErrorSchema,
-          // 401: http.code401Schema,
-          // 406: http.clientErrorSchema,
+          400: http.validationErrorSchema,
+          401: http.tokenJWTErrorSchema,
+          406: http.clientErrorSchema,
           500: http.code500Schema,
         },
-        // body: this.postSchema,
+        requestBody: requestBody.createPost,
       },
     };
 
     return newSchema;
   }
   updateSchema() {
-    const newSchema = {
-      summary: "Atualiza um post do usuário atual",
-      description:
-        "Verifica o Bearer Token do usuário e atualiza um post pertecente à ele.",
-      tags: [this.postTag],
-      // params: paramIdSchema,
-      response: {
-        // 204: http.code204Schema,
-        // 400: http.validationErrorSchema,
-        // 401: http.code401Schema,
-        // 404: http.code404Schema,
-        // 406: http.clientErrorSchema,
-        // 500: http.code500Schema,
+    const newSchema: PathItemObject = {
+      put: {
+        summary: "Atualiza um post do usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário e atualiza um post pertecente à ele.",
+        tags: [this.postTag],
+        parameters: [
+          {
+            $ref: "#/components/parameters/ParameterId",
+          },
+        ],
+        responses: {
+          204: http.code204Schema,
+          400: http.validationErrorSchema,
+          401: http.tokenJWTErrorSchema,
+          404: http.code404Schema,
+          406: http.clientErrorSchema,
+          500: http.code500Schema,
+        },
+        requestBody: requestBody.createPost,
       },
-      // body: this.postSchema,
     };
 
     return newSchema;
   }
   deleteSchema() {
-    const newSchema = {
-      summary: "Deleta um post do usuário atual",
-      description:
-        "Verifica o Bearer Token do usuário e deleta um post pertecente à ele.",
-      tags: [this.postTag],
-      // params: paramIdSchema,
-      response: {
-        // 204: http.code204Schema,
-        // 401: http.code401Schema,
-        // 404: http.code404Schema,
-        // 406: http.clientErrorSchema,
-        // 500: http.code500Schema,
+    const newSchema: PathItemObject = {
+      delete: {
+        summary: "Deleta um post do usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário e deleta um post pertecente à ele.",
+        tags: [this.postTag],
+        parameters: [
+          {
+            $ref: "#/components/parameters/ParameterId",
+          },
+        ],
+        responses: {
+          204: http.code204Schema,
+          401: http.tokenJWTErrorSchema,
+          404: http.code404Schema,
+          406: http.clientErrorSchema,
+          500: http.code500Schema,
+        },
       },
     };
 
     return newSchema;
   }
   updateCoverSchema() {
-    const newSchema = {
-      summary: "Atualiza a capa de um post do usuário atual",
-      description:
-        "Verifica o Bearer Token do usuário e atualiza a capa de um post pertecente à ele.",
-      tags: [this.postTag],
-      response: {
-        // 204: http.code204Schema,
-        // 401: http.code401Schema,
-        // 404: http.code404Schema,
-        // 500: http.code500Schema,
-      },
-      consumes: ["multipart/form-data"],
-      body: {
-        type: "object",
-        properties: {
-          file: {
-            type: "string",
-            format: "binary", // Necessário para indicar upload de arquivo no Swagger
-            description: "Imagem para upload",
+    const newSchema: PathItemObject = {
+      put: {
+        summary: "Atualiza a capa de um post do usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário e atualiza a capa de um post pertecente à ele.",
+        tags: [this.postTag],
+        parameters: [
+          {
+            $ref: "#/components/parameters/ParameterId",
           },
+        ],
+        responses: {
+          204: http.code204Schema,
+          401: http.tokenJWTErrorSchema,
+          404: http.code404Schema,
+          500: http.code500Schema,
         },
-        required: ["file"],
+        requestBody: requestBody.updatePostCover,
       },
     };
 

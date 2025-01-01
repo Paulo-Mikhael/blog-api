@@ -3,7 +3,11 @@ import { routes } from "./routes";
 import { verifyFastifyClientError } from "./utils/verifyFastifyClientError";
 import { replyErrorResponse } from "./utils/replyErrorResponse";
 import { swagger } from "./utils/fastifySwagger";
-import { fastifyServices } from "./utils/fastifyServices";
+import { fastifyServices, fileSize } from "./utils/fastifyServices";
+import path from "node:path";
+import fastifyCookie from "@fastify/cookie";
+import fastifyMultipart from "@fastify/multipart";
+import fastifyStatic from "@fastify/static";
 
 const fastify = Fastify({
   logger: true,
@@ -21,8 +25,21 @@ fastify.setErrorHandler((error, req, reply) => {
 // Swagger
 fastify.register(swagger);
 
-// Serviços de requisição
-fastify.register(fastifyServices);
+const staticFilesConfig = {
+  root: path.join(__dirname, "../uploads"),
+  prefix: "/images/",
+};
+const multipartFilesConfig = {
+  limits: { fileSize },
+  attachFieldsToBody: true,
+};
+
+// Servindo arquivos estáticos
+fastify.register(fastifyStatic, staticFilesConfig);
+// Lidando com requisições "multipart/form-data"
+fastify.register(fastifyMultipart, multipartFilesConfig);
+// Lidando com cookies
+fastify.register(fastifyCookie);
 
 // Rotas
 fastify.register(routes);

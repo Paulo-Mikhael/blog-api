@@ -1,3 +1,4 @@
+import type { RequiredPropertiesObject } from "../types/RequiredPropertiesObject";
 import z from "zod";
 import { RequestService } from "./RequestService";
 
@@ -9,12 +10,28 @@ interface ValidatePostReturn {
 }
 
 export class PostService extends RequestService {
-  public readonly postSchemaDocs = z.object({
-    title: z.string().optional(),
-    content: z.string().optional(),
-    category: z.string().optional(),
-  });
-  public readonly postSchema = z.object({
+  public readonly postSchemaDocs: RequiredPropertiesObject = {
+    properties: {
+      title: {
+        type: "string",
+        minLength: 1,
+        maxLength: 100,
+        description: "Título do post",
+      },
+      content: {
+        type: "string",
+        minimum: 1,
+        description: "Conteúdo do post em formato markdown",
+      },
+      category: {
+        type: "string",
+        minLength: 1,
+        description: "Categoria do post",
+      },
+    },
+    requiredProperties: ["title", "content", "category"],
+  };
+  private postSchema = z.object({
     title: z
       .string({ message: this.requiredMessage })
       .min(1, { message: this.minLengthMessage() })

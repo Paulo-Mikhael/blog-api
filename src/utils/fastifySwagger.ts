@@ -1,8 +1,8 @@
 import type { FastifyPluginAsync } from "fastify";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
-import { paths } from "./paths.js";
-import { schemas } from "./schemas.js";
+import { paths } from "./paths";
+import { schemas } from "./schemas";
 
 export const swagger: FastifyPluginAsync = async (fastify) => {
   // Swagger formato openapi
@@ -26,7 +26,7 @@ export const swagger: FastifyPluginAsync = async (fastify) => {
           },
         },
         parameters: {
-          TakeQuery: {
+          QueryTake: {
             name: "take",
             in: "query",
             required: false,
@@ -35,7 +35,7 @@ export const swagger: FastifyPluginAsync = async (fastify) => {
               default: 50,
             },
           },
-          SkipQuery: {
+          QuerySkip: {
             name: "skip",
             in: "query",
             required: false,
@@ -44,7 +44,7 @@ export const swagger: FastifyPluginAsync = async (fastify) => {
               default: 0,
             },
           },
-          IdParameter: {
+          ParameterId: {
             name: "id",
             in: "path",
             required: true,

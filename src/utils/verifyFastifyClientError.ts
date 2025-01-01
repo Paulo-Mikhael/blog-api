@@ -9,8 +9,6 @@ export function verifyFastifyClientError(
   fastifyError: FastifyError,
   prismaError?: PrismaError
 ) {
-  console.error(`FastifyErrorCode: ${fastifyError.code}\n`);
-
   if (prismaError) {
     const prismaErrorOptions = prismaError.options;
     const foreignKeys = prismaErrorOptions?.foreignKeys;

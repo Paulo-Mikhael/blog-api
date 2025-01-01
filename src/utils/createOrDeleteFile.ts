@@ -1,25 +1,40 @@
 import fs from "node:fs";
 import { pipeline } from "node:stream/promises";
-import type { MultipartFile } from "@fastify/multipart";
 import { getFileDirectoryConfig } from "./getFileDirectoryConfigs";
 import { ClientError } from "../errors/ClientError";
 import { fileSize } from "./fastifyServices";
+import { Readable } from "node:stream";
 
-export async function createOrDeleteFile(
-  fastifyMultipartFile: MultipartFile
-): Promise<{
+export async function createOrDeleteFile(file: File): Promise<{
   url: string;
 }> {
-  const { tempPath, newPath, newFileName } =
-    getFileDirectoryConfig(fastifyMultipartFile);
+  const { tempPath, newPath, newFileName } = getFileDirectoryConfig(file);
 
-  const file = fastifyMultipartFile.file;
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
 
-  await pipeline(file, fs.createWriteStream(tempPath));
+  console.log(`\nTamanho do arquivo antes de criado: ${buffer.length}`);
+
+  const readableNodeStream = Readable.from(
+    (async function* () {
+      const reader = file.stream().getReader();
+      let done = false;
+
+      while (!done) {
+        const { value, done: isDone } = await reader.read();
+        if (value) {
+          yield value; // Retorna o chunk
+        }
+        done = isDone;
+      }
+    })()
+  );
+  await pipeline(readableNodeStream, fs.createWriteStream(tempPath));
+
+  console.log(`\nTamanho do arquivo depois de criado: ${buffer.length}`);
 
   // Só é possível comparar o tamanho real do arquivo depois de criado
-  // O FastifyMultipart só permite ler a quantidade de bytes estabelecida, então se for igual quer dizer que o arquivo passou do limite
-  if (file.bytesRead >= fileSize) {
+  if (buffer.length >= fileSize) {
     fs.unlinkSync(tempPath); // Deleta o arquivo
     throw new ClientError("Tamanho máximo de arquivo excedido", 413);
   }

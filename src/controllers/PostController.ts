@@ -30,7 +30,9 @@ export class PostController extends Controller {
   }
   async getById({ request, reply }: RouteParams) {
     try {
+      console.log(request.params);
       const { id } = this.postService.getParamId(request.params);
+      console.log(id);
       const requiredPost = await getPostOrThrow(id);
 
       return reply.code(200).send({ post: requiredPost });
@@ -103,7 +105,6 @@ export class PostController extends Controller {
   }
   async updateCover({ request, reply }: RouteParams) {
     try {
-      await jsonWebToken.verify(request);
       const { id } = this.postService.getParamId(request.params);
       const postToUpdate = await getPostOrThrow(id);
       if (!request.isMultipart()) {
@@ -113,9 +114,8 @@ export class PostController extends Controller {
         });
       }
 
-      const fastifyMultipartFile = await request.file();
-
-      const { url } = await this.postService.uploadFile(fastifyMultipartFile);
+      const formData = await request.formData();
+      const { url } = await this.postService.uploadFile(formData);
 
       await this.postModel.updateCover(postToUpdate.id, url);
 

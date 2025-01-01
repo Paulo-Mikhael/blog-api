@@ -50,22 +50,17 @@ export class RequestService {
       skip,
     };
   }
-  async uploadFile(
-    fastifyMultipartFile: MultipartFile | undefined
-  ): Promise<{ url: string }> {
-    if (!fastifyMultipartFile) {
+  async uploadFile(requestFormData: FormData): Promise<{ url: string }> {
+    const file = requestFormData.get("file");
+
+    if (!file || !(file instanceof File)) {
       throw new ClientError("Nenhum arquivo anexado", 400);
     }
-    const file = fastifyMultipartFile.file;
-    if (!file || file.bytesRead <= 0) {
-      throw new ClientError("Nenhum arquivo anexado", 400);
-    }
-    const fileType = fastifyMultipartFile.mimetype.replace("image/", "");
-    if (validateFileType(fileType) === false) {
+    if (validateFileType(file.type) === false) {
       throw new ClientError("Insira um arquivo de imagem", 415);
     }
 
-    const { url } = await createOrDeleteFile(fastifyMultipartFile);
+    const { url } = await createOrDeleteFile(file);
 
     return { url };
   }
@@ -92,6 +87,8 @@ export class RequestService {
     const requestObject = zodObject.parse(request);
 
     // Itera as propriedades passadas por parâmetro e confere se todas elas estão no objeto
+    /* As propriedades a serem retornadas são especificadas pelo servidor, se todas as propriedades
+    não estiverem no objeto, o nome da propriedade está errada ou não existe */
     for (let i = 0; i < properties.length; i++) {
       const property = properties[i];
 

@@ -1,12 +1,12 @@
 import type { PathItemObject } from "../types/PathItemObject";
 
-export type RouteDocs = {
+export type RoutesDocs = {
   path: string;
-  routeDocs: PathItemObject[];
+  routeDocsArray: PathItemObject[];
 }[];
 
 export abstract class Docs {
-  abstract routesDocs: RouteDocs;
+  abstract routesDocs: RoutesDocs;
 
   abstract getAllSchema(): PathItemObject;
   abstract getByIdSchema(): PathItemObject;

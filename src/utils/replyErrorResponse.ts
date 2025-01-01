@@ -54,7 +54,7 @@ export function replyErrorResponse(error: unknown, reply: FastifyReply) {
   }
 
   if (error instanceof Error) {
-    console.error(error.stack);
+    console.error(error.name, error.stack);
 
     if (error.name === "SyntaxError") {
       return reply.code(406).send({

@@ -7,15 +7,13 @@ interface FileDirectoryConfigReturn {
   newFileName: string;
 }
 
-export function getFileDirectoryConfig(
-  fastifyMultipartFile: MultipartFile
-): FileDirectoryConfigReturn {
+export function getFileDirectoryConfig(file: File): FileDirectoryConfigReturn {
   const folder = "uploads";
-  const fileType = fastifyMultipartFile.mimetype.replace("image/", "");
+  const fileType = file.type.replace("image/", "");
 
   const newFileName = `${uuidV4()}.${fileType}`;
 
-  const tempPath = `${folder}/${fastifyMultipartFile.filename}`;
+  const tempPath = `${folder}/${file.name}`;
   const newPath = `${folder}/${newFileName}`;
 
   return {

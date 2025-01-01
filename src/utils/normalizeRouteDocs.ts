@@ -1,32 +1,41 @@
-import type { RouteDocs } from "../models/Docs";
+import type { RoutesDocs } from "../models/Docs";
 import type { PathItemObject } from "../types/PathItemObject";
 
 type NormalizedRoutes = {
   [pathName: string]: PathItemObject;
 };
 
-export function normalizeRouteDocs(documentation: RouteDocs): NormalizedRoutes {
+export function normalizeRouteDocs(
+  documentation: RoutesDocs
+): NormalizedRoutes {
+  // Vai armazenar um nome de uma rota com várias documentações
   let normalizedRoutes: NormalizedRoutes = {};
 
+  // Itera o array do tipo "RoutesDocs"
   for (let i = 0; i < documentation.length; i++) {
+    // Nome/Acesso da rota
     const path = documentation[i].path;
-    const routeDocs = documentation[i].routeDocs;
-    let routesDocs: PathItemObject = {};
+    // "routeDocs" tem um array das documentadações da rota
+    const routeDocsArray = documentation[i].routeDocsArray;
+    // Guarda as rotas documentadas de "routeDocsArray" como um objeto
+    let routeDocs: PathItemObject = {};
 
-    routeDocs.map((docs) => {
-      console.log(docs);
-      routesDocs = {
-        ...routesDocs,
+    routeDocsArray.map((docs) => {
+      // Declara "routeDocs" com o mesmo valor + a nova documentação de rota
+      routeDocs = {
+        ...routeDocs,
         ...docs,
       };
     });
 
+    // Declara "normalizedRoutes" com o mesmo valor + o nome de uma nova rota com um objeto com várias documentações
     normalizedRoutes = {
       ...normalizedRoutes,
-      [path]: routesDocs,
+      [path]: routeDocs,
     };
   }
 
-  console.log(normalizedRoutes);
+  // console.log(normalizedRoutes); // Rotas normalizadas
+
   return normalizedRoutes;
 }
