@@ -105,6 +105,7 @@ export class PostController extends Controller {
   }
   async updateCover({ request, reply }: RouteParams) {
     try {
+      await jsonWebToken.verify(request);
       const { id } = this.postService.getParamId(request.params);
       const postToUpdate = await getPostOrThrow(id);
       if (!request.isMultipart()) {

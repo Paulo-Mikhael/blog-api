@@ -1,6 +1,7 @@
 import { http } from "./schemas/http";
 import type { PathItemObject } from "../types/PathItemObject";
 import { Docs, type RoutesDocs } from "../models/Docs";
+import { requestBody } from "./schemas/requestBody";
 
 export class UsersDocs extends Docs {
   private adminTag = "Admin";
@@ -10,6 +11,14 @@ export class UsersDocs extends Docs {
     {
       path: "/admin/users",
       routeDocsArray: [this.getAllSchema()],
+    },
+    {
+      path: "/admin/users/{id}",
+      routeDocsArray: [this.getByIdSchema()],
+    },
+    {
+      path: "/users",
+      routeDocsArray: [this.createSchema()],
     },
   ];
 
@@ -50,7 +59,7 @@ export class UsersDocs extends Docs {
         responses: {
           200: http.code200Schema({
             user: {
-              type: "string",
+              $ref: "#/components/schemas/User",
             },
           }),
           404: http.code404Schema,
@@ -64,12 +73,12 @@ export class UsersDocs extends Docs {
   }
   createSchema(): PathItemObject {
     const newSchema: PathItemObject = {
-      get: {
+      post: {
         summary: "Cadastra um usuário",
         description: "Cria um novo usuário e retorna um Json Web Token.",
         tags: [this.userTag],
         responses: {
-          200: http.code200Schema({
+          201: http.code200Schema({
             jwtToken: {
               type: "string",
             },
@@ -85,7 +94,7 @@ export class UsersDocs extends Docs {
           ),
           500: http.code500Schema,
         },
-        // body: this.userSchema,
+        requestBody: requestBody.createUser,
         security: [],
       },
     };

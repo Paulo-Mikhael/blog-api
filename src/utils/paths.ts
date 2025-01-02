@@ -9,6 +9,6 @@ const normalizedPostDocs = normalizeRouteDocs(postDocs.routesDocs);
 const normalizedUsersDocs = normalizeRouteDocs(usersDocs.routesDocs);
 
 export const paths: PathsObject = {
-  ...normalizedPostDocs,
   ...normalizedUsersDocs,
+  ...normalizedPostDocs,
 };

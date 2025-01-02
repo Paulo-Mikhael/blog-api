@@ -1,12 +1,15 @@
 import type { RequestBodyObject } from "../../types/RequestBodyObject";
 import type { RequiredPropertiesObject } from "../../types/RequiredPropertiesObject";
 import { PostService } from "../../services/PostService";
+import { UserService } from "../../services/UserService";
 import { updateFileSchema } from "../../data/update_file_schema";
 
 const postService = new PostService();
+const userService = new UserService();
 
 export const requestBody = {
   createPost: bodyObject(postService.postSchemaDocs),
+  createUser: bodyObject(userService.userSchemaDocs),
   updatePostCover: bodyObject(updateFileSchema, { isMultipart: true }),
 };
 

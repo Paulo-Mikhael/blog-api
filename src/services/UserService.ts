@@ -7,29 +7,50 @@ import { ClientError } from "../errors/ClientError";
 import { specialCharacters } from "../data/specials_characteres";
 import { numbers } from "../data/numbers";
 import { UserModel } from "../models/UserModel";
+import type { RequiredPropertiesObject } from "../types/RequiredPropertiesObject";
 
 type BodyOptions = {
   strongPasswordValidation?: boolean;
 };
 
 export class UserService extends RequestService {
-  public readonly userSchemaDocs = z.object({
-    email: z.string().optional(),
-    password: z.string().optional(),
-  });
-  public readonly updateUserSchemaDocs = z.object({
-    newEmail: z.string().optional(),
-    oldPassword: z.string().optional(),
-    newPassword: z.string().optional(),
-  });
+  public readonly userSchemaDocs: RequiredPropertiesObject = {
+    properties: {
+      email: {
+        type: "string",
+        format: "email",
+      },
+      password: {
+        type: "string",
+        example: "Ex@mple123",
+      },
+    },
+    requiredProperties: ["email", "password"],
+  };
+  public readonly updateSerSchemaDocs: RequiredPropertiesObject = {
+    properties: {
+      newEmail: {
+        type: "string",
+        format: "email",
+      },
+      oldPassword: {
+        type: "string",
+      },
+      newPassword: {
+        type: "string",
+        example: "Ex@mple123",
+      },
+    },
+    requiredProperties: ["email", "oldPassword", "newPassword"],
+  };
 
-  public userSchema = z.object({
+  private userSchema = z.object({
     email: z
       .string({ message: this.requiredMessage })
       .email({ message: "Email inválido" }),
     password: z.string({ message: this.requiredMessage }),
   });
-  public updateUserSchema = z.object({
+  private updateUserSchema = z.object({
     newEmail: z
       .string({ message: this.requiredMessage })
       .email({ message: "Email inválido" }),
