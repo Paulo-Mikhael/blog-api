@@ -9,6 +9,7 @@ import { jsonWebToken } from "../utils/jsonWebToken";
 import { getPostOrThrow } from "../utils/getPostOrThrow";
 import { getUserOrThrow } from "../utils/getUserOrThrow";
 import { ClientError } from "../errors/ClientError";
+import { getFileFromFormData } from "../utils/getFileFromFormData";
 
 export class PostController extends Controller {
   constructor(
@@ -108,11 +109,12 @@ export class PostController extends Controller {
       await jsonWebToken.verify(request);
       const { id } = this.postService.getParamId(request.params);
       const postToUpdate = await getPostOrThrow(id);
+
       if (!request.isMultipart()) {
-        return reply.code(400).send({
-          message:
-            "Requisição inválida. Precisa-se ser do tipo 'multipart/form-data'",
-        });
+        throw new ClientError(
+          "Requisição inválida. Precisa-se ser do tipo 'multipart/form-data'",
+          400
+        );
       }
 
       const file = await request.file();

@@ -27,7 +27,7 @@ export class UserService extends RequestService {
     },
     requiredProperties: ["email", "password"],
   };
-  public readonly updateSerSchemaDocs: RequiredPropertiesObject = {
+  public readonly updateUserSchemaDocs: RequiredPropertiesObject = {
     properties: {
       newEmail: {
         type: "string",

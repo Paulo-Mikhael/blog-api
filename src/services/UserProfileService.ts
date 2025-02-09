@@ -1,20 +1,31 @@
 import z from "zod";
 import { RequestService } from "./RequestService";
+import type { RequiredPropertiesObject } from "../types/RequiredPropertiesObject";
 
 export class UserProfileService extends RequestService {
-  public readonly userProfileSchemaDocs = z.object({
-    name: z.string().optional(),
-    biography: z.string().optional(),
-  });
+  public readonly userProfileSchemaDocs: RequiredPropertiesObject = {
+    properties: {
+      name: {
+        type: "string",
+        maxLength: 30,
+      },
+      biography: {
+        type: "string",
+        maxLength: 200,
+      },
+    },
+    requiredProperties: ["name", "biography"],
+  };
 
-  public readonly userProfileSchema = z.object({
+  private userProfileSchema = z.object({
     name: z
       .string({ message: this.requiredMessage })
       .min(1, { message: this.minLengthMessage() })
       .max(30, { message: this.maxLengthMessage(30) }),
     biography: z
       .string({ message: this.requiredMessage })
-      .min(1, this.minLengthMessage()),
+      .min(1, this.minLengthMessage())
+      .max(200, { message: this.maxLengthMessage(200) }),
   });
 
   validate(body: unknown) {

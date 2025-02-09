@@ -52,6 +52,14 @@ export const swagger: FastifyPluginAsync = async (fastify) => {
               type: "string",
             },
           },
+          ParameterName: {
+            name: "name",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
         },
         schemas,
       },

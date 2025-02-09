@@ -18,7 +18,35 @@ export class UsersDocs extends Docs {
     },
     {
       path: "/users",
-      routeDocsArray: [this.createSchema()],
+      routeDocsArray: [
+        this.createSchema(),
+        this.deleteSchema(),
+        this.updateSchema(),
+      ],
+    },
+    {
+      path: "/users/actual",
+      routeDocsArray: [this.getActualSchema()],
+    },
+    {
+      path: "/users/login",
+      routeDocsArray: [this.loginSchema()],
+    },
+    {
+      path: "/users/logoff",
+      routeDocsArray: [this.logoffSchema()],
+    },
+    {
+      path: "/users/relogin",
+      routeDocsArray: [this.reloginSchema()],
+    },
+    {
+      path: "/users/profile/{name}",
+      routeDocsArray: [this.getByProfileNameSchema()],
+    },
+    {
+      path: "/users/profile",
+      routeDocsArray: [this.createProfileSchema()],
     },
   ];
 
@@ -103,7 +131,7 @@ export class UsersDocs extends Docs {
   }
   deleteSchema(): PathItemObject {
     const newSchema: PathItemObject = {
-      get: {
+      delete: {
         summary: "Deleta o usuário atual",
         description:
           "Verifica o Bearer Token do usuário logado e exclui o usuário.",
@@ -119,16 +147,20 @@ export class UsersDocs extends Docs {
   }
   updateSchema(): PathItemObject {
     const newSchema: PathItemObject = {
-      get: {
+      put: {
         summary: "Atualiza os dados do usuário atual",
         description:
           "Verifica o Bearer Token do usuário logado e atualiza para os dados informados no corpo da requisição.",
         tags: [this.userTag],
         responses: {
           204: http.code204Schema,
+          401: http.clientErrorSchema(
+            "Acesso não autorizado",
+            "Senha incorreta"
+          ),
           500: http.code500Schema,
         },
-        // body: this.updateUserSchema,
+        requestBody: requestBody.updateUser,
       },
     };
 
@@ -144,7 +176,7 @@ export class UsersDocs extends Docs {
         responses: {
           200: http.code200Schema({
             userProfile: {
-              type: "string",
+              $ref: "#/components/schemas/UserProfile",
             },
             userEmail: {
               type: "string",
@@ -162,7 +194,7 @@ export class UsersDocs extends Docs {
   }
   loginSchema(): PathItemObject {
     const newSchema: PathItemObject = {
-      get: {
+      post: {
         summary: "Loga um usuário",
         description:
           "Verifica se existe um usuário com o email e senha informados, e retorna um Token JWT para conecta-lo a aplicação.",
@@ -180,7 +212,7 @@ export class UsersDocs extends Docs {
           ),
           500: http.code500Schema,
         },
-        // body: this.userSchema,
+        requestBody: requestBody.createUser,
         security: [],
       },
     };
@@ -189,7 +221,7 @@ export class UsersDocs extends Docs {
   }
   logoffSchema(): PathItemObject {
     const newSchema: PathItemObject = {
-      get: {
+      post: {
         summary: "Desconecta o usuário",
         description: "Desconecta o usuário atual da aplicação.",
         tags: [this.userTag],
@@ -217,6 +249,11 @@ export class UsersDocs extends Docs {
           404: http.code404Schema,
           500: http.code500Schema,
         },
+        parameters: [
+          {
+            $ref: "#/components/parameters/ParameterName",
+          },
+        ],
       },
     };
 
@@ -224,7 +261,7 @@ export class UsersDocs extends Docs {
   }
   createProfileSchema(): PathItemObject {
     const newSchema: PathItemObject = {
-      get: {
+      post: {
         summary: "Cria um perfil para o usuário atual",
         tags: [this.userTag, this.userProfileTag],
         responses: {
@@ -234,6 +271,7 @@ export class UsersDocs extends Docs {
               format: "url",
             },
           }),
+          401: http.tokenJWTErrorSchema,
           400: http.validationErrorSchema,
           403: http.clientErrorSchema(
             "Sessão de usuário ativa",
@@ -241,7 +279,7 @@ export class UsersDocs extends Docs {
           ),
           500: http.code500Schema,
         },
-        // body: this.userProfileSchemaDocs,
+        requestBody: requestBody.createUserProfile,
       },
     };
 

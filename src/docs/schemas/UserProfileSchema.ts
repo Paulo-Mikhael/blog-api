@@ -1,4 +1,4 @@
-import type { SchemaObject } from "../types/SchemaObject";
+import type { SchemaObject } from "../../types/SchemaObject";
 
 export const UserProfileSchema: SchemaObject = {
   UserProfile: {

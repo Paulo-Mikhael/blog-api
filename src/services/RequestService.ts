@@ -70,8 +70,8 @@ export class RequestService {
   }
 
   //Retorna um objeto contendo propriedades com os nomes especificados no array de string
-  getObjectFromRequest(request: unknown, properties: string[]) {
-    if (typeof request !== "object") {
+  getObjectFromRequest(requestParams: unknown, properties: string[]) {
+    if (typeof requestParams !== "object") {
       return {};
     }
     // Variável que vai guardar as propriedades como um objeto ZOD
@@ -88,11 +88,12 @@ export class RequestService {
     // Objeto ZOD com as propriedades
     const zodObject = z.object(zObjectProperties);
     // Objeto normal com as propriedades
-    const requestObject = zodObject.parse(request);
+    const requestObject = zodObject.parse(requestParams);
 
     // Itera as propriedades passadas por parâmetro e confere se todas elas estão no objeto
     /* As propriedades a serem retornadas são especificadas pelo servidor, se todas as propriedades
-    não estiverem no objeto, o nome da propriedade está errada ou não existe */
+    não estiverem no objeto, o nome da propriedade está errada ou não existe. Certificar que o parâmetro
+    que a rota pede (rota/:parâmetro), é o mesmo da propriedade especificada */
     for (let i = 0; i < properties.length; i++) {
       const property = properties[i];
 
