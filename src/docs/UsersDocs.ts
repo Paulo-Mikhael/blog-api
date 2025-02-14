@@ -68,6 +68,14 @@ export class UsersDocs extends Docs {
           }),
           500: http.code500Schema,
         },
+        parameters: [
+          {
+            $ref: "#/components/parameters/QueryTake",
+          },
+          {
+            $ref: "#/components/parameters/QuerySkip",
+          },
+        ],
         security: [],
       },
     };
@@ -206,6 +214,7 @@ export class UsersDocs extends Docs {
             },
           }),
           400: http.validationErrorSchema,
+          401: http.clientErrorSchema("Acesso negado", "Senha incorreta"),
           403: http.clientErrorSchema(
             "Sessão de usuário ativa",
             "Faça um 'relogin' ou inicie uma sessão com outro usuário"

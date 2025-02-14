@@ -14,5 +14,5 @@ export function routes(
 
   fastify.register(postRoutes);
   fastify.register(userRoutes);
-  // fastify.register(userProfileRoutes);
+  fastify.register(userProfileRoutes);
 }

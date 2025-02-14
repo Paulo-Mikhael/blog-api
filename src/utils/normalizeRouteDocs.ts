@@ -8,14 +8,14 @@ type NormalizedRoutes = {
 export function normalizeRouteDocs(
   documentation: RoutesDocs
 ): NormalizedRoutes {
-  // Vai armazenar um nome de uma rota com várias documentações
+  // Vai armazenar um nome de uma rota e suas documentações
   let normalizedRoutes: NormalizedRoutes = {};
 
   // Itera o array do tipo "RoutesDocs"
   for (let i = 0; i < documentation.length; i++) {
     // Nome/Acesso da rota
     const path = documentation[i].path;
-    // "routeDocs" tem um array das documentadações da rota
+    // "routeDocs" tem um array das documentações da rota
     const routeDocsArray = documentation[i].routeDocsArray;
     // Guarda as rotas documentadas de "routeDocsArray" como um objeto
     let routeDocs: PathItemObject = {};
@@ -28,7 +28,7 @@ export function normalizeRouteDocs(
       };
     });
 
-    // Declara "normalizedRoutes" com o mesmo valor + o nome de uma nova rota com um objeto com várias documentações
+    // Declara "normalizedRoutes" com o mesmo valor + o nome de uma nova rota e suas documentações
     normalizedRoutes = {
       ...normalizedRoutes,
       [path]: routeDocs,
