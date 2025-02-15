@@ -58,6 +58,15 @@ export class PostModel extends Model<Post> {
 
     return postsByField;
   }
+  async getByAuthorName(name: string, take = 50, skip = 0) {
+    const postsByName = await db.post.findMany({
+      where: { author: { name } },
+      take,
+      skip,
+    });
+
+    return postsByName;
+  }
   async updateCover(id: string, coverUrl: string) {
     await db.post.update({ where: { id }, data: { cover: coverUrl } });
   }

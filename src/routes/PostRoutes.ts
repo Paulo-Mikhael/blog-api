@@ -20,7 +20,7 @@ export const postRoutes: FastifyPluginAsync = async (app) => {
   app.get("/posts/category/:category", (request, reply) => {
     post.getPostsByCategory({ request, reply });
   });
-  app.get("/posts/user/:userId", (request, reply) => {
-    post.getPostsByUserId({ request, reply });
+  app.get("/posts/user/:name", (request, reply) => {
+    post.getPostsByUserName({ request, reply });
   });
 };

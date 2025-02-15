@@ -9,7 +9,6 @@ import { jsonWebToken } from "../utils/jsonWebToken";
 import { getPostOrThrow } from "../utils/getPostOrThrow";
 import { getUserOrThrow } from "../utils/getUserOrThrow";
 import { ClientError } from "../errors/ClientError";
-import { getFileFromFormData } from "../utils/getFileFromFormData";
 
 export class PostController extends Controller {
   constructor(
@@ -152,24 +151,20 @@ export class PostController extends Controller {
       replyErrorResponse(error, reply);
     }
   }
-  async getPostsByUserId({ request, reply }: RouteParams) {
+  async getPostsByUserName({ request, reply }: RouteParams) {
     try {
       const params = this.postService.getObjectFromRequest(request.params, [
-        "userId",
+        "name",
       ]);
-      const userId = params.userId;
-      if (!userId) {
+      const userName = params.name;
+      if (!userName) {
         return reply
           .code(400)
-          .send({ message: "Insira o id do autor do post" });
+          .send({ message: "Insira o nome do autor do post" });
       }
 
       const { take, skip } = this.postService.getQueryTakeSkip(request.query);
-      const posts = await this.postModel.getByField(
-        { field: "authorId", value: userId },
-        take,
-        skip
-      );
+      const posts = await this.postModel.getByAuthorName(userName, take, skip);
 
       return reply.code(200).send({ posts });
     } catch (error) {

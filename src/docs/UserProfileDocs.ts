@@ -25,6 +25,8 @@ export class UserProfileDocs {
     const newSchema: PathItemObject = {
       get: {
         summary: "Retorna todos os perfis de usuário",
+        description:
+          "Retorna uma lista com todos os perfis de usuários da aplicação. Qualquer usuário pode acessar.",
         tags: [this.userProfileTag],
         parameters: [
           {
@@ -52,6 +54,8 @@ export class UserProfileDocs {
     const newSchema: PathItemObject = {
       get: {
         summary: "Retorna um perfil de usuário por id",
+        description:
+          "Retorna um perfil de usuário cadastrado na aplicação. Qualquer usuário pode acessar.",
         tags: [this.userProfileTag],
         responses: {
           200: http.code200Schema({
@@ -72,6 +76,8 @@ export class UserProfileDocs {
     const newSchema: PathItemObject = {
       post: {
         summary: "Cria um perfil para o usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário atual e cria um perfil para ele.",
         tags: [this.userProfileTag],
         responses: {
           201: http.code200Schema({
@@ -94,6 +100,8 @@ export class UserProfileDocs {
     const newSchema: PathItemObject = {
       delete: {
         summary: "Deleta o perfil do usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário atual e deleta o perfil dele.",
         tags: [this.userProfileTag],
         responses: {
           204: http.code204Schema,
@@ -109,6 +117,8 @@ export class UserProfileDocs {
     const newSchema: PathItemObject = {
       put: {
         summary: "Atualiza o perfil do usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário atual e atualiza as informações do perfil dele.",
         tags: [this.userProfileTag],
         responses: {
           204: http.code204Schema,

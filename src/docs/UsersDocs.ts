@@ -6,7 +6,6 @@ import { requestBody } from "./schemas/requestBody";
 export class UsersDocs extends Docs {
   private adminTag = "Admin";
   private userTag = "User";
-  private userProfileTag = "User Profile";
   public routesDocs: RoutesDocs = [
     {
       path: "/admin/users",
@@ -248,7 +247,9 @@ export class UsersDocs extends Docs {
     const newSchema: PathItemObject = {
       get: {
         summary: "Retorna um perfil de usuário pelo nome",
-        tags: [this.userTag, this.userProfileTag],
+        description:
+          "Retorna um perfil de usuário cadastrado na aplicação. Qualquer usuário pode acessar.",
+        tags: [this.userTag],
         responses: {
           200: http.code200Schema({
             userProfile: {
@@ -263,6 +264,7 @@ export class UsersDocs extends Docs {
             $ref: "#/components/parameters/ParameterName",
           },
         ],
+        security: [],
       },
     };
 
@@ -272,7 +274,9 @@ export class UsersDocs extends Docs {
     const newSchema: PathItemObject = {
       post: {
         summary: "Cria um perfil para o usuário atual",
-        tags: [this.userTag, this.userProfileTag],
+        description:
+          "Verifica o Bearer Token do usuário atual e cria um perfil para ele.",
+        tags: [this.userTag],
         responses: {
           201: http.code201Schema({
             userUrl: {

@@ -11,6 +11,10 @@ export class PostDocs extends Docs {
       routeDocsArray: [this.getAllSchema(), this.createSchema()],
     },
     {
+      path: "/posts/user/{name}",
+      routeDocsArray: [this.getByAuthorNameSchema()],
+    },
+    {
       path: "/posts/{id}",
       routeDocsArray: [
         this.getByIdSchema(),
@@ -58,6 +62,7 @@ export class PostDocs extends Docs {
     const newSchema: PathItemObject = {
       get: {
         summary: "Retorna um post pelo id",
+        description: "Retorna um post pelo id. Qualquer usuário pode acessar",
         tags: [this.postTag],
         parameters: [
           {
@@ -68,6 +73,42 @@ export class PostDocs extends Docs {
           200: http.code200Schema({
             post: {
               $ref: "#/components/schemas/Post",
+            },
+          }),
+          404: http.code404Schema,
+          500: http.code500Schema,
+        },
+        security: [],
+      },
+    };
+
+    return newSchema;
+  }
+  getByAuthorNameSchema() {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Retorna uma lista de posts pelo nome do author",
+        description:
+          "Retorna uma lista de posts pelo nome do autor. Qualquer usuário pode acessar.",
+        tags: [this.postTag],
+        parameters: [
+          {
+            $ref: "#/components/parameters/ParameterName",
+          },
+          {
+            $ref: "#/components/parameters/QueryTake",
+          },
+          {
+            $ref: "#/components/parameters/QuerySkip",
+          },
+        ],
+        responses: {
+          200: http.code200Schema({
+            post: {
+              type: "array",
+              items: {
+                $ref: "#/components/schemas/Post",
+              },
             },
           }),
           404: http.code404Schema,
