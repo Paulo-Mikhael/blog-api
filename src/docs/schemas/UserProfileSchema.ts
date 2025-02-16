@@ -3,7 +3,7 @@ import type { SchemaObject } from "../../types/SchemaObject";
 export const UserProfileSchema: SchemaObject = {
   UserProfile: {
     type: "object",
-    required: ["id", "name", "biography", "userId"],
+    required: ["id", "name", "biography", "email"],
     properties: {
       id: {
         type: "string",
@@ -26,10 +26,10 @@ export const UserProfileSchema: SchemaObject = {
         format: "url",
         description: "URL do avatar do usuário (pode estar vazio)",
       },
-      userId: {
+      email: {
         type: "string",
-        format: "uuid",
-        description: "ID do usuário associado ao perfil",
+        format: "email",
+        description: "Email do usuário",
       },
     },
   },

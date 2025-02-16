@@ -11,10 +11,6 @@ export class PostDocs extends Docs {
       routeDocsArray: [this.getAllSchema(), this.createSchema()],
     },
     {
-      path: "/posts/user/{name}",
-      routeDocsArray: [this.getByAuthorNameSchema()],
-    },
-    {
       path: "/posts/{id}",
       routeDocsArray: [
         this.getByIdSchema(),
@@ -25,6 +21,14 @@ export class PostDocs extends Docs {
     {
       path: "/post-cover/{id}",
       routeDocsArray: [this.updateCoverSchema()],
+    },
+    {
+      path: "/posts/user/{name}",
+      routeDocsArray: [this.getByAuthorNameSchema()],
+    },
+    {
+      path: "/posts/category/{category}",
+      routeDocsArray: [this.getByCategorySchema()],
     },
   ];
 
@@ -67,6 +71,38 @@ export class PostDocs extends Docs {
         parameters: [
           {
             $ref: "#/components/parameters/ParameterId",
+          },
+        ],
+        responses: {
+          200: http.code200Schema({
+            post: {
+              $ref: "#/components/schemas/Post",
+            },
+          }),
+          404: http.code404Schema,
+          500: http.code500Schema,
+        },
+        security: [],
+      },
+    };
+
+    return newSchema;
+  }
+  getByCategorySchema() {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Retorna uma lista de posts pela categoria",
+        description:
+          "Retorna uma lista de posts pela categoria. Qualquer usuário pode acessar",
+        tags: [this.postTag],
+        parameters: [
+          {
+            name: "category",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+            },
           },
         ],
         responses: {

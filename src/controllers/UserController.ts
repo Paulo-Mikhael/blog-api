@@ -1,10 +1,7 @@
 import type { UserService } from "../services/UserService";
 import type { RouteParams } from "../types/RouteParams";
 import type { UserModel } from "../models/UserModel";
-import type { UserProfileService } from "../services/UserProfileService";
 import type { UserTokenPayload } from "../types/UserTokenPayload";
-import { UserProfileModel } from "../models/UserProfileModel";
-import { UserProfileController } from "./UserProfileController";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { v4 as uuidV4 } from "uuid";
 import { Controller } from "./Controller";
@@ -13,21 +10,14 @@ import { getUserOrThrow } from "../utils/getUserOrThrow";
 import { ClientError } from "../errors/ClientError";
 import { cookies } from "../utils/cookies";
 import { getUserProfileOrThrow } from "../utils/getUserProfileOrThrow";
+import { PostModel } from "../models/PostModel";
 
 export class UserController extends Controller {
-  private readonly userProfileController: UserProfileController;
-
   constructor(
     private readonly userModel: UserModel,
-    private readonly userService: UserService,
-    userProfileModel: UserProfileModel,
-    userProfileService: UserProfileService
+    private readonly userService: UserService
   ) {
     super();
-    this.userProfileController = new UserProfileController(
-      userProfileModel,
-      userProfileService
-    );
   }
 
   async getAll({ request, reply }: RouteParams) {
@@ -152,53 +142,6 @@ export class UserController extends Controller {
       replyErrorResponse(error, reply);
     }
   }
-  async createProfile({ request, reply }: RouteParams) {
-    try {
-      const { userId } = await jsonWebToken.verify(request);
-      const user = await getUserOrThrow(userId);
-      const userProfile = user.profile;
-      if (userProfile) {
-        throw new ClientError(
-          `Esse usuário já tem um perfil chamado: ${userProfile.name}`,
-          409
-        );
-      }
-
-      // Adicionando o ID de usuário especificado na requisição
-      if (typeof request.body === "object") {
-        request.body = {
-          ...request.body,
-          userId,
-        };
-      }
-
-      return this.userProfileController.create({ request, reply });
-    } catch (error) {
-      replyErrorResponse(error, reply);
-    }
-  }
-  async getByProfileName({ request, reply }: RouteParams) {
-    try {
-      const params = this.userService.getObjectFromRequest(request.params, [
-        "name",
-      ]);
-      const userProfileName = params.name;
-
-      const userProfileModel = new UserProfileModel();
-      const userProfilesByName = await userProfileModel.getByField({
-        field: "name",
-        value: userProfileName,
-      });
-      if (userProfilesByName.length <= 0) {
-        throw new ClientError("Perfil de Usuário não encontrado", 404);
-      }
-      const userProfile = userProfilesByName[0];
-
-      return reply.code(200).send({ userProfile });
-    } catch (error) {
-      replyErrorResponse(error, reply);
-    }
-  }
   async logoff({ reply }: RouteParams) {
     try {
       cookies.userEmail.remove(reply);
@@ -227,5 +170,30 @@ export class UserController extends Controller {
     } catch (error) {
       replyErrorResponse(error, reply);
     }
+  }
+  async getPosts({ request, reply }: RouteParams) {
+    const userCookies = cookies.userEmail.get(request);
+    const userEmail = userCookies.userEmail;
+    const user = await this.userModel.getByEmailAddress(userEmail);
+    if (!user) {
+      throw new Error(
+        `Ocorreu um erro ao pegar o usuário de email ${userEmail}`
+      );
+    }
+
+    const userProfile = user.profile;
+    if (!userProfile) {
+      throw new ClientError(
+        "Perfil de usuário inexistente. O usuário precisa ter um perfil para criar posts."
+      );
+    }
+
+    const postModel = new PostModel();
+    const userPosts = await postModel.getByField({
+      field: "authorId",
+      value: userProfile.id,
+    });
+
+    return reply.code(200).send({ userPosts });
   }
 }

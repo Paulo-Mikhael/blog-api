@@ -40,6 +40,27 @@ export class UserProfileController extends Controller {
       replyErrorResponse(error, reply);
     }
   }
+  async getByName({ request, reply }: RouteParams) {
+    try {
+      const { name } = this.userProfileService.getObjectFromRequest(
+        request.params,
+        ["name"]
+      );
+      if (!name) {
+        throw new Error(
+          "Não foi possível pegar o parâmetro 'name' da requisição"
+        );
+      }
+      const userProfile = await this.userProfileModel.getByField({
+        field: "name",
+        value: name,
+      });
+
+      return reply.code(200).send({ userProfile });
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
   async create({ request, reply }: RouteParams) {
     try {
       const { userId } = await jsonWebToken.verify(request);

@@ -54,26 +54,26 @@ function createJsonToken(
 
 async function verifyJsonToken(request: FastifyRequest) {
   const requestAuthorization = request.headers.authorization;
-  const requestCookies = request.cookies;
-  // Nos cookies está o email do usuário logado
-  const cookieUserEmail = requestCookies.userEmail;
-
-  if (!cookieUserEmail) {
-    throw new JsonWebTokenError("Nenhum usuário logado");
-  }
-
-  const secretKey = jwtSecretKey();
+  // Separa a string pelo
+  const authorizationStringObject = requestAuthorization?.split(" ");
   if (
-    !requestAuthorization ||
-    !requestAuthorization.toLowerCase().includes("bearer")
+    !authorizationStringObject ||
+    !authorizationStringObject[0].toLowerCase().includes("bearer")
   ) {
     throw new JsonWebTokenError(
       "Bearer Token inexistente no header da requisição"
     );
   }
 
-  // Apaga o "Bearer" e tira os espaços
-  const jwtToken = requestAuthorization.substring(6).trim();
+  const requestCookies = request.cookies;
+  // Nos cookies está o email do usuário logado
+  const cookieUserEmail = requestCookies.userEmail;
+  if (!cookieUserEmail) {
+    throw new JsonWebTokenError("Nenhum usuário logado");
+  }
+
+  const secretKey = jwtSecretKey();
+  const jwtToken = authorizationStringObject[1];
 
   const payload = jwt.verify(jwtToken, secretKey);
   const parsedPayload = userPayloadSchema.parse(payload);

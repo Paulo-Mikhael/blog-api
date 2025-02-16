@@ -19,6 +19,10 @@ export class UserProfileDocs {
       path: "/profiles/{id}",
       routeDocsArray: [this.getByIdSchema()],
     },
+    {
+      path: "/profiles/user/{name}",
+      routeDocsArray: [this.getByNameSchema()],
+    },
   ];
 
   getAllSchema(): PathItemObject {
@@ -39,7 +43,10 @@ export class UserProfileDocs {
         responses: {
           200: http.code200Schema({
             userProfiles: {
-              $ref: "#/components/schemas/UserProfile",
+              type: "array",
+              items: {
+                $ref: "#/components/schemas/UserProfile",
+              },
             },
           }),
           500: http.code500Schema,
@@ -66,6 +73,41 @@ export class UserProfileDocs {
           400: http.validationErrorSchema,
           500: http.code500Schema,
         },
+        parameters: [
+          {
+            $ref: "#/components/parameters/ParameterId",
+          },
+        ],
+        security: [],
+      },
+    };
+
+    return newSchema;
+  }
+  getByNameSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Retorna um perfil de usuário pelo nome",
+        description:
+          "Retorna um perfil de usuário cadastrado na aplicação. Qualquer usuário pode acessar.",
+        tags: [this.userProfileTag],
+        responses: {
+          200: http.code200Schema({
+            userProfile: {
+              type: "array",
+              items: {
+                $ref: "#/components/schemas/UserProfile",
+              },
+            },
+          }),
+          404: http.code404Schema,
+          500: http.code500Schema,
+        },
+        parameters: [
+          {
+            $ref: "#/components/parameters/ParameterName",
+          },
+        ],
         security: [],
       },
     };

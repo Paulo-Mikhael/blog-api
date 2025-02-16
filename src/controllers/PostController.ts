@@ -87,7 +87,12 @@ export class PostController extends Controller {
       }
 
       const { id } = this.postService.getParamId(request.params);
+      const userProfile = user.profile;
       const requiredPost = await getPostOrThrow(id);
+      if (requiredPost.authorId !== userProfile.id) {
+        throw new ClientError("O usuário atual não é dono desse post.", 401);
+      }
+
       const postToUpdateBody = this.postService.validate(request.body);
       const newPost: CreatePost = {
         id,

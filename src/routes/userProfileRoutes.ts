@@ -17,6 +17,9 @@ export const userProfileRoutes: FastifyPluginAsync = async (app) => {
   app.get("/profiles/:id", (request, reply) =>
     userProfile.getById({ request, reply })
   );
+  app.get("/profiles/user/:name", (request, reply) =>
+    userProfile.getByName({ request, reply })
+  );
   app.post("/profiles", (request, reply) =>
     userProfile.create({ request, reply })
   );

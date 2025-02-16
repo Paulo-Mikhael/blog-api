@@ -19,13 +19,17 @@ export class UsersDocs extends Docs {
       path: "/users",
       routeDocsArray: [
         this.createSchema(),
-        this.deleteSchema(),
         this.updateSchema(),
+        this.deleteSchema(),
       ],
     },
     {
       path: "/users/actual",
       routeDocsArray: [this.getActualSchema()],
+    },
+    {
+      path: "/users/posts",
+      routeDocsArray: [this.getPostsSchema()],
     },
     {
       path: "/users/login",
@@ -38,14 +42,6 @@ export class UsersDocs extends Docs {
     {
       path: "/users/relogin",
       routeDocsArray: [this.reloginSchema()],
-    },
-    {
-      path: "/users/profile/{name}",
-      routeDocsArray: [this.getByProfileNameSchema()],
-    },
-    {
-      path: "/users/profile",
-      routeDocsArray: [this.createProfileSchema()],
     },
   ];
 
@@ -145,6 +141,7 @@ export class UsersDocs extends Docs {
         tags: [this.userTag],
         responses: {
           204: http.code204Schema,
+          401: http.tokenJWTErrorSchema,
           500: http.code500Schema,
         },
       },
@@ -164,6 +161,14 @@ export class UsersDocs extends Docs {
           401: http.clientErrorSchema(
             "Acesso não autorizado",
             "Senha incorreta"
+          ),
+          406: http.clientErrorSchema(
+            "Senha fraca",
+            "A senha precisa ter pelo menos 8 caracteres"
+          ),
+          409: http.clientErrorSchema(
+            "Conflito com o banco de dados",
+            "O e-mail fornecido já está em uso"
           ),
           500: http.code500Schema,
         },
@@ -243,61 +248,6 @@ export class UsersDocs extends Docs {
 
     return newSchema;
   }
-  getByProfileNameSchema(): PathItemObject {
-    const newSchema: PathItemObject = {
-      get: {
-        summary: "Retorna um perfil de usuário pelo nome",
-        description:
-          "Retorna um perfil de usuário cadastrado na aplicação. Qualquer usuário pode acessar.",
-        tags: [this.userTag],
-        responses: {
-          200: http.code200Schema({
-            userProfile: {
-              type: "string",
-            },
-          }),
-          404: http.code404Schema,
-          500: http.code500Schema,
-        },
-        parameters: [
-          {
-            $ref: "#/components/parameters/ParameterName",
-          },
-        ],
-        security: [],
-      },
-    };
-
-    return newSchema;
-  }
-  createProfileSchema(): PathItemObject {
-    const newSchema: PathItemObject = {
-      post: {
-        summary: "Cria um perfil para o usuário atual",
-        description:
-          "Verifica o Bearer Token do usuário atual e cria um perfil para ele.",
-        tags: [this.userTag],
-        responses: {
-          201: http.code201Schema({
-            userUrl: {
-              type: "string",
-              format: "url",
-            },
-          }),
-          401: http.tokenJWTErrorSchema,
-          400: http.validationErrorSchema,
-          403: http.clientErrorSchema(
-            "Sessão de usuário ativa",
-            "Faça um 'relogin' ou inicie uma sessão com outro usuário"
-          ),
-          500: http.code500Schema,
-        },
-        requestBody: requestBody.createUserProfile,
-      },
-    };
-
-    return newSchema;
-  }
   reloginSchema(): PathItemObject {
     const newSchema: PathItemObject = {
       get: {
@@ -315,6 +265,35 @@ export class UsersDocs extends Docs {
             "Requisição inválida",
             "Usuário inexistente"
           ),
+          500: http.code500Schema,
+        },
+        security: [],
+      },
+    };
+
+    return newSchema;
+  }
+  getPostsSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      get: {
+        summary: "Retorna os posts do usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário atual e retorna os posts pertecentes à ele.",
+        tags: [this.userTag],
+        responses: {
+          200: http.code200Schema({
+            userPosts: {
+              type: "array",
+              items: {
+                $ref: "#/components/schemas/Post",
+              },
+            },
+          }),
+          400: http.clientErrorSchema(
+            "Perfil de usuário inexistente",
+            "Perfil de usuário inexistente. O usuário precisa ter um perfil para criar posts."
+          ),
+          404: http.clientErrorSchema("Nenhum usuário logado"),
           500: http.code500Schema,
         },
         security: [],
