@@ -5,6 +5,7 @@ import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import z from "zod";
 import { ClientError } from "../errors/ClientError";
 import { getUserOrThrow } from "./getUserOrThrow";
+import { cookies } from "./cookies";
 
 export const jsonWebToken = {
   create: createJsonToken,
@@ -15,6 +16,9 @@ export const jsonWebToken = {
 const userPayloadSchema = z.object({
   userId: z.string({
     message: "É preciso informar o id do usuário em um token JWT",
+  }),
+  sectionId: z.string({
+    message: "É preciso informar o id da sessão em um token JWT",
   }),
 });
 
@@ -54,8 +58,9 @@ function createJsonToken(
 
 async function verifyJsonToken(request: FastifyRequest) {
   const requestAuthorization = request.headers.authorization;
-  // Separa a string pelo
+  // Separa a string pelo espaço para obter o tipo de autorização no índice 0 e o token no índice 1 (caso seja Bearer Token)
   const authorizationStringObject = requestAuthorization?.split(" ");
+  // Se não houver nenhuma autorização do tipo Bearer
   if (
     !authorizationStringObject ||
     !authorizationStringObject[0].toLowerCase().includes("bearer")
@@ -77,6 +82,12 @@ async function verifyJsonToken(request: FastifyRequest) {
 
   const payload = jwt.verify(jwtToken, secretKey);
   const parsedPayload = userPayloadSchema.parse(payload);
+  const actualSectionId = cookies.get(request).sectionId;
+
+  if (parsedPayload.sectionId !== actualSectionId) {
+    throw new JsonWebTokenError("Uma nova sessão foi iniciada.");
+  }
+
   const user = await getUserOrThrow(parsedPayload.userId);
 
   // Se o email extraído do token JWT for diferente do usuário logado

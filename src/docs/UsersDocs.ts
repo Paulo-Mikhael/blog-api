@@ -16,16 +16,16 @@ export class UsersDocs extends Docs {
       routeDocsArray: [this.getByIdSchema()],
     },
     {
+      path: "/users/actual",
+      routeDocsArray: [this.getActualSchema()],
+    },
+    {
       path: "/users",
       routeDocsArray: [
         this.createSchema(),
         this.updateSchema(),
         this.deleteSchema(),
       ],
-    },
-    {
-      path: "/users/actual",
-      routeDocsArray: [this.getActualSchema()],
     },
     {
       path: "/users/posts",

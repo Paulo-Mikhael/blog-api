@@ -13,9 +13,9 @@ export class PostDocs extends Docs {
     {
       path: "/posts/{id}",
       routeDocsArray: [
-        this.getByIdSchema(),
         this.updateSchema(),
         this.deleteSchema(),
+        this.getByIdSchema(),
       ],
     },
     {

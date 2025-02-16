@@ -49,10 +49,15 @@ export class UserController extends Controller {
         password: this.userService.getSafePassword(validatedBody.password),
       };
       const { user } = await this.userModel.create(newUser);
-      const userPayload = { userId: user.id };
+      const sectionId = uuidV4();
+      const userPayload: UserTokenPayload = {
+        userId: user.id,
+        sectionId,
+      };
       const { token } = jsonWebToken.create(userPayload);
 
       cookies.userEmail.set(reply, user.email);
+      cookies.sectionId.set(reply, sectionId);
       return reply.code(201).send({ jwtToken: token });
     } catch (error) {
       replyErrorResponse(error, reply);
@@ -66,6 +71,7 @@ export class UserController extends Controller {
       await this.userModel.delete(requiredUser.id);
 
       cookies.userEmail.remove(reply);
+      cookies.sectionId.remove(reply);
       return reply.code(204).send();
     } catch (error) {
       replyErrorResponse(error, reply);
@@ -98,7 +104,7 @@ export class UserController extends Controller {
   }
   async getActualUser({ request, reply }: RouteParams) {
     try {
-      const { userEmail } = cookies.userEmail.get(request);
+      const { userEmail } = cookies.get(request);
       const user = await this.userModel.getByEmailAddress(userEmail);
 
       // Se entrar neste bloco é erro do servidor, porque os cookies devem retornar um usuário com um email que existe
@@ -131,12 +137,15 @@ export class UserController extends Controller {
         bodyEmail,
         validatedBody.password
       );
+      const sectionId = uuidV4();
       const userPayload: UserTokenPayload = {
         userId: user.id,
+        sectionId,
       };
       const { token } = jsonWebToken.create(userPayload);
 
       cookies.userEmail.set(reply, user.email);
+      cookies.sectionId.set(reply, sectionId);
       return reply.send({ jwtToken: token });
     } catch (error) {
       replyErrorResponse(error, reply);
@@ -153,17 +162,20 @@ export class UserController extends Controller {
   }
   async relogin({ request, reply }: RouteParams) {
     try {
-      const { userEmail } = cookies.userEmail.get(request);
+      const { userEmail } = cookies.get(request);
       const user = await this.userModel.getByEmailAddress(userEmail);
       if (!user) {
         throw new ClientError("Usuário não encontrado");
       }
 
+      const sectionId = uuidV4();
       const userPayload: UserTokenPayload = {
         userId: user.id,
+        sectionId,
       };
 
       cookies.userEmail.set(reply, userEmail);
+      cookies.sectionId.set(reply, sectionId);
       const { token } = jsonWebToken.create(userPayload);
 
       return reply.code(200).send({ jwtToken: token });
@@ -172,8 +184,7 @@ export class UserController extends Controller {
     }
   }
   async getPosts({ request, reply }: RouteParams) {
-    const userCookies = cookies.userEmail.get(request);
-    const userEmail = userCookies.userEmail;
+    const { userEmail } = cookies.get(request);
     const user = await this.userModel.getByEmailAddress(userEmail);
     if (!user) {
       throw new Error(
