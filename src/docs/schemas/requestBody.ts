@@ -15,6 +15,7 @@ export const requestBody = {
   createUserProfile: bodyObject(userProfileService.userProfileSchemaDocs),
   updateUser: bodyObject(userService.updateUserSchemaDocs),
   updatePostCover: bodyObject(updateFileSchema, { isMultipart: true }),
+  updateUserAvatar: bodyObject(updateFileSchema, { isMultipart: true }),
 };
 
 function bodyObject(

@@ -11,9 +11,13 @@ export class UserProfileDocs {
       routeDocsArray: [
         this.getAllSchema(),
         this.createSchema(),
-        this.deleteSchema(),
         this.updateSchema(),
+        this.deleteSchema(),
       ],
+    },
+    {
+      path: "/profiles/avatar",
+      routeDocsArray: [this.updateAvatarSchema()],
     },
     {
       path: "/profiles/{id}",
@@ -168,6 +172,27 @@ export class UserProfileDocs {
           500: http.code500Schema,
         },
         requestBody: requestBody.createUserProfile,
+      },
+    };
+
+    return newSchema;
+  }
+  updateAvatarSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      put: {
+        summary: "Atualiza o avatar do usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário atual e atualiza o avatar do usuário.",
+        tags: [this.userProfileTag],
+        responses: {
+          200: http.code200Schema({
+            imageUrl: { type: "string", description: "Url da imagem enviada." },
+          }),
+          401: http.tokenJWTErrorSchema,
+          404: http.code404Schema,
+          500: http.code500Schema,
+        },
+        requestBody: requestBody.updateUserAvatar,
       },
     };
 

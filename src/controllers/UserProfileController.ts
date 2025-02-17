@@ -9,6 +9,8 @@ import { getUserProfileOrThrow } from "../utils/getUserProfileOrThrow";
 import { jsonWebToken } from "../utils/jsonWebToken";
 import { getUserOrThrow } from "../utils/getUserOrThrow";
 import { appDomain } from "../data/app_domain";
+import { ClientError } from "../errors/ClientError";
+import { createOrDeleteFile } from "../utils/createOrDeleteFile";
 
 export class UserProfileController extends Controller {
   constructor(
@@ -107,14 +109,37 @@ export class UserProfileController extends Controller {
       const userProfile = await getUserProfileOrThrow(user.profile?.id);
 
       const newProfile: UserProfile = {
+        ...validatedBody,
         id: userProfile.id,
         userId,
         avatar: userProfile.avatar,
-        ...validatedBody,
       };
       await this.userProfileModel.update(userProfile.id, newProfile);
 
       return reply.code(204).send();
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async updateAvatar({ request, reply }: RouteParams) {
+    try {
+      const { userId } = await jsonWebToken.verify(request);
+
+      if (!request.isMultipart) {
+        throw new ClientError(
+          "Requisição inválida. Precisa-se ser do tipo 'multipart/form-data'"
+        );
+      }
+
+      const file = await request.file();
+      const { url } = await this.userProfileService.uploadFile(file);
+
+      const user = await getUserOrThrow(userId);
+      const userProfile = await getUserProfileOrThrow(user.profile?.id);
+
+      await this.userProfileModel.updateAvatar(userProfile.id, url);
+
+      return reply.code(200).send({ imageUrl: url });
     } catch (error) {
       replyErrorResponse(error, reply);
     }

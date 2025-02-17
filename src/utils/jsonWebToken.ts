@@ -82,8 +82,8 @@ async function verifyJsonToken(request: FastifyRequest) {
 
   const payload = jwt.verify(jwtToken, secretKey);
   const parsedPayload = userPayloadSchema.parse(payload);
-  const actualSectionId = cookies.get(request).sectionId;
 
+  const actualSectionId = cookies.get(request).sectionId;
   if (parsedPayload.sectionId !== actualSectionId) {
     throw new JsonWebTokenError("Uma nova sessão foi iniciada.");
   }

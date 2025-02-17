@@ -154,7 +154,7 @@ export class UsersDocs extends Docs {
       put: {
         summary: "Atualiza os dados do usuário atual",
         description:
-          "Verifica o Bearer Token do usuário logado e atualiza para os dados informados no corpo da requisição.",
+          "Verifica o Bearer Token do usuário logado e atualiza o e-mail e senha do usuário, sendo necessário informar a senha antiga para isso.",
         tags: [this.userTag],
         responses: {
           204: http.code204Schema,

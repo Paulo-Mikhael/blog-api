@@ -29,4 +29,7 @@ export const userProfileRoutes: FastifyPluginAsync = async (app) => {
   app.put("/profiles", (request, reply) =>
     userProfile.update({ request, reply })
   );
+  app.put("/profiles/avatar", (request, reply) => {
+    userProfile.updateAvatar({ request, reply });
+  });
 };

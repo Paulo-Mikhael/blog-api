@@ -3,6 +3,7 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { paths } from "./paths";
 import { schemas } from "../data/schemas";
+import { parameters } from "./parameters";
 
 export const swagger: FastifyPluginAsync = async (fastify) => {
   // Swagger formato openapi
@@ -25,42 +26,7 @@ export const swagger: FastifyPluginAsync = async (fastify) => {
             bearerFormat: "JWT",
           },
         },
-        parameters: {
-          QueryTake: {
-            name: "take",
-            in: "query",
-            required: false,
-            schema: {
-              type: "string",
-              default: 50,
-            },
-          },
-          QuerySkip: {
-            name: "skip",
-            in: "query",
-            required: false,
-            schema: {
-              type: "string",
-              default: 0,
-            },
-          },
-          ParameterId: {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: {
-              type: "string",
-            },
-          },
-          ParameterName: {
-            name: "name",
-            in: "path",
-            required: true,
-            schema: {
-              type: "string",
-            },
-          },
-        },
+        parameters,
         schemas,
       },
       security: [

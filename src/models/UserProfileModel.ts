@@ -101,4 +101,7 @@ export class UserProfileModel extends Model<UserProfile> {
 
     return;
   }
+  async updateAvatar(id: string, avatarUrl: string) {
+    await db.userProfile.update({ where: { id }, data: { avatar: avatarUrl } });
+  }
 }
