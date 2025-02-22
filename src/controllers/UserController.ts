@@ -2,17 +2,24 @@ import type { UserService } from "../services/UserService";
 import type { RouteParams } from "../types/RouteParams";
 import type { UserModel } from "../models/UserModel";
 import type { UserTokenPayload } from "../types/UserTokenPayload";
+import type { FastifyRequest } from "fastify";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { v4 as uuidV4 } from "uuid";
-import { Controller } from "./Controller";
 import { jsonWebToken } from "../utils/jsonWebToken";
 import { getUserOrThrow } from "../utils/getUserOrThrow";
 import { ClientError } from "../errors/ClientError";
 import { cookies } from "../utils/cookies";
 import { getUserProfileOrThrow } from "../utils/getUserProfileOrThrow";
 import { PostModel } from "../models/PostModel";
+import { getUserData } from "../utils/getUserData";
 
-export class UserController extends Controller {
+abstract class BaseController {
+  abstract create({ request, reply }: RouteParams): Promise<undefined>;
+  abstract delete({ request, reply }: RouteParams): Promise<undefined>;
+  abstract update({ request, reply }: RouteParams): Promise<undefined>;
+}
+
+export class UserController extends BaseController {
   constructor(
     private readonly userModel: UserModel,
     private readonly userService: UserService
@@ -20,26 +27,6 @@ export class UserController extends Controller {
     super();
   }
 
-  async getAll({ request, reply }: RouteParams) {
-    try {
-      const { take, skip } = this.userService.getQueryTakeSkip(request.query);
-      const users = await this.userModel.getAll(take, skip);
-
-      return reply.code(200).send({ users });
-    } catch (error) {
-      replyErrorResponse(error, reply);
-    }
-  }
-  async getById({ request, reply }: RouteParams) {
-    try {
-      const { id } = this.userService.getParamId(request.params);
-      const requiredUser = await getUserOrThrow(id);
-
-      return reply.code(200).send({ user: requiredUser });
-    } catch (error) {
-      replyErrorResponse(error, reply);
-    }
-  }
   async create({ request, reply }: RouteParams) {
     try {
       const validatedBody = this.userService.validate(request.body);
@@ -72,7 +59,7 @@ export class UserController extends Controller {
 
       cookies.userEmail.remove(reply);
       cookies.sectionId.remove(reply);
-      return reply.code(204).send();
+      return reply.code(204);
     } catch (error) {
       replyErrorResponse(error, reply);
     }
@@ -97,7 +84,7 @@ export class UserController extends Controller {
       await this.userModel.update(user.id, newUser);
       cookies.userEmail.set(reply, newUser.email);
 
-      return reply.code(204).send();
+      return reply.code(204);
     } catch (error) {
       replyErrorResponse(error, reply);
     }

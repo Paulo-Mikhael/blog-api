@@ -56,7 +56,17 @@ function createJsonToken(
   return { token };
 }
 
-async function verifyJsonToken(request: FastifyRequest) {
+async function verifyJsonToken(
+  request: FastifyRequest,
+  unauthorizedMessage?: string
+) {
+  let message: string;
+  if (!unauthorizedMessage) {
+    message = "Bearer Token inexistente no header da requisição";
+  } else {
+    message = unauthorizedMessage;
+  }
+
   const requestAuthorization = request.headers.authorization;
   // Separa a string pelo espaço para obter o tipo de autorização no índice 0 e o token no índice 1 (caso seja Bearer Token)
   const authorizationStringObject = requestAuthorization?.split(" ");
@@ -65,9 +75,7 @@ async function verifyJsonToken(request: FastifyRequest) {
     !authorizationStringObject ||
     !authorizationStringObject[0].toLowerCase().includes("bearer")
   ) {
-    throw new JsonWebTokenError(
-      "Bearer Token inexistente no header da requisição"
-    );
+    throw new JsonWebTokenError(message);
   }
 
   const requestCookies = request.cookies;

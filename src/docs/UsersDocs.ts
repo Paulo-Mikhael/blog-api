@@ -8,16 +8,16 @@ export class UsersDocs extends Docs {
   private userTag = "User";
   public routesDocs: RoutesDocs = [
     {
+      path: "/users/actual",
+      routeDocsArray: [this.getActualSchema()],
+    },
+    {
       path: "/admin/users",
       routeDocsArray: [this.getAllSchema()],
     },
     {
       path: "/admin/users/{id}",
       routeDocsArray: [this.getByIdSchema()],
-    },
-    {
-      path: "/users/actual",
-      routeDocsArray: [this.getActualSchema()],
     },
     {
       path: "/users",

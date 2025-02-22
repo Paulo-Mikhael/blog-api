@@ -6,6 +6,7 @@ async function main() {
   const postId = "5b067322-8are-47d5-a0d7-8265307bbb5b";
   const userProfileId = "5b067322-2ggt-47d5-a0d7-8265307bbb5b";
 
+  // Para evitar erros
   await deleteUserData(userId);
 
   await db.user.upsert({
@@ -17,6 +18,7 @@ async function main() {
       id: userId,
       email: "aaa@gmail.com",
       password: Buffer.from("Uns@fe123#").toString("base64"),
+      role: "ADMIN",
     },
   });
 

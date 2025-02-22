@@ -24,6 +24,14 @@ export const swagger: FastifyPluginAsync = async (fastify) => {
             type: "http",
             scheme: "bearer",
             bearerFormat: "JWT",
+            description:
+              "Insira o token JWT de um usuário para autenticá-lo na aplicação.",
+          },
+          BasicAuth: {
+            type: "http",
+            scheme: "basic",
+            description:
+              "Para usar as rotas '/admin', caso seja adminstrador, insira seu email e senha nos campos abaixo, ou apenas faça login com seu usuário da aplicação.",
           },
         },
         parameters,
@@ -32,6 +40,7 @@ export const swagger: FastifyPluginAsync = async (fastify) => {
       security: [
         {
           BearerAuth: [],
+          BasicAuth: [],
         },
       ],
       // Se as rotas não forem declaradas em "paths" as referências de schemas não funcionam

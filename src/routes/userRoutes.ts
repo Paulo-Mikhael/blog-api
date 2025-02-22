@@ -8,13 +8,6 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
   const userService = new UserService();
   const user = new UserController(userModel, userService);
 
-  app.get("/admin/users", async (request, reply) =>
-    user.getAll({ request, reply })
-  );
-
-  app.get("/admin/users/:id", (request, reply) =>
-    user.getById({ request, reply })
-  );
   app.get("/users/actual", (request, reply) =>
     user.getActualUser({ request, reply })
   );

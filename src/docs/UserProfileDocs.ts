@@ -137,6 +137,7 @@ export class UserProfileDocs {
           500: http.code500Schema,
         },
         requestBody: requestBody.createUserProfile,
+        security: [{ BearerAuth: [] }],
       },
     };
 
@@ -154,6 +155,7 @@ export class UserProfileDocs {
           401: http.tokenJWTErrorSchema,
           500: http.code500Schema,
         },
+        security: [{ BearerAuth: [] }],
       },
     };
 
@@ -172,6 +174,7 @@ export class UserProfileDocs {
           500: http.code500Schema,
         },
         requestBody: requestBody.createUserProfile,
+        security: [{ BearerAuth: [] }],
       },
     };
 
@@ -193,6 +196,7 @@ export class UserProfileDocs {
           500: http.code500Schema,
         },
         requestBody: requestBody.updateUserAvatar,
+        security: [{ BearerAuth: [] }],
       },
     };
 

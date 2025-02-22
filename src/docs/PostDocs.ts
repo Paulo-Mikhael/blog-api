@@ -178,6 +178,7 @@ export class PostDocs extends Docs {
           500: http.code500Schema,
         },
         requestBody: requestBody.createPost,
+        security: [{ BearerAuth: [] }],
       },
     };
 
@@ -207,6 +208,7 @@ export class PostDocs extends Docs {
           500: http.code500Schema,
         },
         requestBody: requestBody.createPost,
+        security: [{ BearerAuth: [] }],
       },
     };
 
@@ -230,6 +232,7 @@ export class PostDocs extends Docs {
           404: http.code404Schema,
           500: http.code500Schema,
         },
+        security: [{ BearerAuth: [] }],
       },
     };
 
@@ -271,6 +274,7 @@ export class PostDocs extends Docs {
           500: http.code500Schema,
         },
         requestBody: requestBody.updatePostCover,
+        security: [{ BearerAuth: [] }],
       },
     };
 

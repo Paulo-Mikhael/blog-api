@@ -34,7 +34,7 @@ export class UserModel extends Model<User> {
 
     return users;
   }
-  async create(user: User) {
+  async create(user: Omit<User, "role">) {
     const createdUser = await db.user
       .create({ data: user })
       .catch((error: FE) => {
@@ -50,7 +50,7 @@ export class UserModel extends Model<User> {
 
     return;
   }
-  async update(userId: string, newUserData: User) {
+  async update(userId: string, newUserData: Omit<User, "role">) {
     await db.user
       .update({ where: { id: userId }, data: newUserData })
       .catch((error: FE) => {

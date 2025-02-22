@@ -2,10 +2,10 @@ import db from "../db/dbConfig";
 
 export async function deleteUserData(id: string) {
   const user = await db.user.findUnique({ where: { id } });
+  if (!user) return;
   const userProfile = await db.userProfile.findUnique({
     where: { userId: id },
   });
-  if (!user) return;
 
   if (userProfile) {
     await db.post.deleteMany({ where: { authorId: userProfile.id } });
