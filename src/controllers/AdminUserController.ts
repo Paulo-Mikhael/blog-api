@@ -1,14 +1,12 @@
-import type { FastifyRequest } from "fastify";
 import type { UserModel } from "../models/UserModel";
 import type { UserService } from "../services/UserService";
 import type { RouteParams } from "../types/RouteParams";
-import { getUserData } from "../utils/getUserData";
 import { getUserOrThrow } from "../utils/getUserOrThrow";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { Controller } from "./Controller";
 import { UserController } from "./UserController";
 import { cookies } from "../utils/cookies";
-import { ClientError } from "../errors/ClientError";
+import { verifyAdminUser } from "../utils/verifyAdminUser";
 
 export class AdminUserController extends Controller {
   constructor(
@@ -18,26 +16,9 @@ export class AdminUserController extends Controller {
     super();
   }
 
-  // Método que verifica se o usuário é administrador
-  private async verifyUserData(request: FastifyRequest) {
-    const userData = await getUserData(request);
-    const user = await this.userService.login(
-      userData.username,
-      userData.password
-    );
-
-    if (user.role !== "ADMIN") {
-      throw new ClientError(
-        `O usuário de email '${userData.username}' não é um administrador do sistema.`
-      );
-    }
-
-    return userData;
-  }
-
   async getAll({ request, reply }: RouteParams) {
     try {
-      await this.verifyUserData(request);
+      await verifyAdminUser(request);
 
       const { take, skip } = this.userService.getQueryTakeSkip(request.query);
       const users = await this.userModel.getAll(take, skip);
@@ -49,7 +30,7 @@ export class AdminUserController extends Controller {
   }
   async getById({ request, reply }: RouteParams) {
     try {
-      await this.verifyUserData(request);
+      await verifyAdminUser(request);
 
       const { id } = this.userService.getParamId(request.params);
       const requiredUser = await getUserOrThrow(id);
@@ -61,7 +42,7 @@ export class AdminUserController extends Controller {
   }
   async create({ request, reply }: RouteParams) {
     try {
-      await this.verifyUserData(request);
+      await verifyAdminUser(request);
 
       const userController = new UserController(
         this.userModel,
@@ -75,7 +56,7 @@ export class AdminUserController extends Controller {
   }
   async delete({ request, reply }: RouteParams): Promise<undefined> {
     try {
-      await this.verifyUserData(request);
+      await verifyAdminUser(request);
 
       const { id } = this.userService.getParamId(request.params);
       const requiredUser = await getUserOrThrow(id);
@@ -91,19 +72,16 @@ export class AdminUserController extends Controller {
   }
   async update({ request, reply }: RouteParams): Promise<undefined> {
     try {
-      await this.verifyUserData(request);
+      await verifyAdminUser(request);
 
       const { id } = this.userService.getParamId(request.params);
       const userToUpdate = await getUserOrThrow(id);
 
-      const updateUserBody = await this.userService.validateUpdateBody(
-        request.body,
-        userToUpdate.email
-      );
+      const updateUserBody = this.userService.validate(request.body);
       const updatedUser = {
         id: userToUpdate.id,
-        email: updateUserBody.newEmail,
-        password: updateUserBody.newPassword,
+        email: updateUserBody.email,
+        password: updateUserBody.password,
       };
 
       await this.userModel.update(userToUpdate.id, updatedUser);

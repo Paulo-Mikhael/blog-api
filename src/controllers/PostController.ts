@@ -30,9 +30,7 @@ export class PostController extends Controller {
   }
   async getById({ request, reply }: RouteParams) {
     try {
-      console.log(request.params);
       const { id } = this.postService.getParamId(request.params);
-      console.log(id);
       const requiredPost = await getPostOrThrow(id);
 
       return reply.code(200).send({ post: requiredPost });

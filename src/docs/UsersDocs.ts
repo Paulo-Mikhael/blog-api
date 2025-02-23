@@ -1,23 +1,22 @@
-import { http } from "./schemas/http";
+import type { RoutesDocs } from "../models/Docs";
 import type { PathItemObject } from "../types/PathItemObject";
-import { Docs, type RoutesDocs } from "../models/Docs";
+import { http } from "./schemas/http";
 import { requestBody } from "./schemas/requestBody";
 
-export class UsersDocs extends Docs {
-  private adminTag = "Admin";
+abstract class BaseDocs {
+  abstract routesDocs: RoutesDocs;
+
+  abstract createSchema(): PathItemObject;
+  abstract deleteSchema(): PathItemObject;
+  abstract updateSchema(): PathItemObject;
+}
+
+export class UsersDocs extends BaseDocs {
   private userTag = "User";
   public routesDocs: RoutesDocs = [
     {
       path: "/users/actual",
       routeDocsArray: [this.getActualSchema()],
-    },
-    {
-      path: "/admin/users",
-      routeDocsArray: [this.getAllSchema()],
-    },
-    {
-      path: "/admin/users/{id}",
-      routeDocsArray: [this.getByIdSchema()],
     },
     {
       path: "/users",
@@ -45,63 +44,6 @@ export class UsersDocs extends Docs {
     },
   ];
 
-  getAllSchema(): PathItemObject {
-    const newSchema: PathItemObject = {
-      get: {
-        summary: "Lista todos os usuários",
-        description:
-          "Retorna uma lista de todos os usuários cadastrados no sistema.",
-        tags: [this.adminTag],
-        responses: {
-          200: http.code200Schema({
-            users: {
-              type: "array",
-              items: {
-                $ref: "#/components/schemas/User",
-              },
-            },
-          }),
-          500: http.code500Schema,
-        },
-        parameters: [
-          {
-            $ref: "#/components/parameters/QueryTake",
-          },
-          {
-            $ref: "#/components/parameters/QuerySkip",
-          },
-        ],
-        security: [],
-      },
-    };
-
-    return newSchema;
-  }
-  getByIdSchema(): PathItemObject {
-    const newSchema: PathItemObject = {
-      get: {
-        summary: "Retorna um usuário pelo ID",
-        tags: [this.adminTag],
-        parameters: [
-          {
-            $ref: "#/components/parameters/ParameterId",
-          },
-        ],
-        responses: {
-          200: http.code200Schema({
-            user: {
-              $ref: "#/components/schemas/User",
-            },
-          }),
-          404: http.code404Schema,
-          500: http.code500Schema,
-        },
-        security: [],
-      },
-    };
-
-    return newSchema;
-  }
   createSchema(): PathItemObject {
     const newSchema: PathItemObject = {
       post: {

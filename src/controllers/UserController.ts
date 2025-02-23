@@ -2,7 +2,6 @@ import type { UserService } from "../services/UserService";
 import type { RouteParams } from "../types/RouteParams";
 import type { UserModel } from "../models/UserModel";
 import type { UserTokenPayload } from "../types/UserTokenPayload";
-import type { FastifyRequest } from "fastify";
 import { replyErrorResponse } from "../utils/replyErrorResponse";
 import { v4 as uuidV4 } from "uuid";
 import { jsonWebToken } from "../utils/jsonWebToken";
@@ -11,7 +10,6 @@ import { ClientError } from "../errors/ClientError";
 import { cookies } from "../utils/cookies";
 import { getUserProfileOrThrow } from "../utils/getUserProfileOrThrow";
 import { PostModel } from "../models/PostModel";
-import { getUserData } from "../utils/getUserData";
 
 abstract class BaseController {
   abstract create({ request, reply }: RouteParams): Promise<undefined>;

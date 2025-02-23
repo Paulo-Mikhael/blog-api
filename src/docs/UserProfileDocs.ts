@@ -1,11 +1,11 @@
 import type { PathItemObject } from "../types/PathItemObject";
-import type { RoutesDocs } from "../models/Docs";
+import { Docs, type RoutesDocs } from "../models/Docs";
 import { requestBody } from "./schemas/requestBody";
 import { http } from "./schemas/http";
 
-export class UserProfileDocs {
+export class UserProfileDocs extends Docs {
   private userProfileTag = "User Profile";
-  public routeDocs: RoutesDocs = [
+  public routesDocs: RoutesDocs = [
     {
       path: "/profiles",
       routeDocsArray: [

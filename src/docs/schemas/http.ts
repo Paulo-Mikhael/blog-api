@@ -16,6 +16,10 @@ export const http = {
   validationErrorSchema: httpValidationErrorSchema(
     "Erro de validação dos dados da requisição"
   ),
+  adminAcess401Error: httpMessageSchema(
+    "Acesso Negado",
+    "Faça login como administrador para acessar as rotas '/admin'"
+  ),
 };
 
 function httpCodeSchema(
