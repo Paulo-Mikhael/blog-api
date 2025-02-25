@@ -17,7 +17,7 @@ export class RequestService {
   getParamId(params: unknown): { id: string } {
     const idParamsSchema = z.object({
       id: z.string({
-        message: "Parâmetro ':id' não encontrado na requisição",
+        message: "Parâmetro 'id' não encontrado na requisição",
       }),
     });
 

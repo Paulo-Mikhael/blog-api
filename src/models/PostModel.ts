@@ -69,5 +69,12 @@ export class PostModel extends Model<Post> {
   }
   async updateCover(id: string, coverUrl: string) {
     await db.post.update({ where: { id }, data: { cover: coverUrl } });
+
+    return;
+  }
+  async deleteByAuthorId(authorId: string) {
+    await db.post.deleteMany({ where: { authorId } });
+
+    return;
   }
 }

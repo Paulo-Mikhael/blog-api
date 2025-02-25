@@ -4,6 +4,7 @@ import { userRoutes } from "./routes/userRoutes";
 import { userProfileRoutes } from "./routes/userProfileRoutes";
 import { adminUserRoutes } from "./routes/adminUserRoutes";
 import { adminPostRoutes } from "./routes/adminPostRoutes";
+import { adminUserProfileRoutes } from "./routes/adminUserProfileRoutes";
 
 export function routes(
   fastify: FastifyInstance,
@@ -19,4 +20,5 @@ export function routes(
   fastify.register(userProfileRoutes);
   fastify.register(adminUserRoutes);
   fastify.register(adminPostRoutes);
+  fastify.register(adminUserProfileRoutes);
 }

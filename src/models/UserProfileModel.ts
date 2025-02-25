@@ -6,6 +6,7 @@ import db from "../db/dbConfig";
 import { PrismaError } from "../errors/PrismaError";
 import { returnSafeProfiles } from "../utils/returnSafeProfiles";
 import { returnSafeProfile } from "../utils/returnSafeProfile";
+import { PostModel } from "./PostModel";
 
 export class UserProfileModel extends Model<UserProfile> {
   async getAll(take = 50, skip = 0) {
@@ -85,6 +86,9 @@ export class UserProfileModel extends Model<UserProfile> {
     return { userProfile: createdProfile };
   }
   async delete(id: string) {
+    const postModel = new PostModel();
+    await postModel.deleteByAuthorId(id);
+
     await db.userProfile.delete({ where: { id } });
 
     return;

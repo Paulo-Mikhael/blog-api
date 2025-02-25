@@ -5,6 +5,7 @@ import { UsersDocs } from "../docs/UsersDocs";
 import { UserProfileDocs } from "../docs/UserProfileDocs";
 import { AdminUserDocs } from "../docs/AdminUserDocs";
 import { AdminPostDocs } from "../docs/AdminPostDocs";
+import { AdminUserProfileDocs } from "../docs/AdminUserProfileDocs";
 
 const postDocs = new PostDocs();
 const normalizedPostDocs = normalizeRouteDocs(postDocs.routesDocs);
@@ -18,6 +19,10 @@ const adminUserDocs = new AdminUserDocs();
 const normalizedAdminUserDocs = normalizeRouteDocs(adminUserDocs.routesDocs);
 const adminPostDocs = new AdminPostDocs();
 const normalizedAdminPostDocs = normalizeRouteDocs(adminPostDocs.routesDocs);
+const adminUserProfileDocs = new AdminUserProfileDocs();
+const normalizedAdminUserProfileDocs = normalizeRouteDocs(
+  adminUserProfileDocs.routesDocs
+);
 
 export const paths: PathsObject = {
   ...normalizedUsersDocs,
@@ -25,4 +30,5 @@ export const paths: PathsObject = {
   ...normalizedUserProfileDocs,
   ...normalizedAdminUserDocs,
   ...normalizedAdminPostDocs,
+  ...normalizedAdminUserProfileDocs,
 };

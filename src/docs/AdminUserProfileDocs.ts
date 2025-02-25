@@ -1,14 +1,14 @@
-import { CrudDocs } from "../models/CrudDocs";
-import type { RoutesDocs } from "../models/Docs";
 import type { PathItemObject } from "../types/PathItemObject";
+import type { RoutesDocs } from "../models/Docs";
+import { CrudDocs } from "../models/CrudDocs";
 import { http } from "./schemas/http";
 import { requestBody } from "./schemas/requestBody";
 
-export class AdminPostDocs extends CrudDocs {
+export class AdminUserProfileDocs extends CrudDocs {
   private adminTag = "Admin";
   public routesDocs: RoutesDocs = [
     {
-      path: "/admin/posts/{id}",
+      path: "/admin/profiles/{id}",
       routeDocsArray: [
         this.createSchema(),
         this.deleteSchema(),
@@ -16,16 +16,16 @@ export class AdminPostDocs extends CrudDocs {
       ],
     },
     {
-      path: "/admin/post-cover/{id}",
-      routeDocsArray: [this.updateCoverSchema()],
+      path: "/admin/profiles/avatar",
+      routeDocsArray: [this.updateAvatarSchema()],
     },
   ];
 
-  createSchema() {
+  createSchema(): PathItemObject {
     const newSchema: PathItemObject = {
       post: {
-        summary: "Cria um post para um usuário pelo id",
-        description: "Cria um post para o usuário de id informado.",
+        summary: "Cria um perfil para um usuário pelo id",
+        description: "Cria um perfil para o usuário de id informado.",
         tags: [this.adminTag],
         parameters: [
           {
@@ -33,56 +33,28 @@ export class AdminPostDocs extends CrudDocs {
           },
         ],
         responses: {
-          201: http.code201Schema({
-            postId: {
+          201: http.code200Schema({
+            userUrl: {
               type: "string",
-              format: "uuid",
+              description: "Url do usuário",
             },
           }),
           400: http.validationErrorSchema,
           401: http.adminAcess401Error,
-          406: http.clientErrorSchema(
-            "Perfil inexistente",
-            "O usuário precisa ter um perfil para criar posts"
-          ),
           500: http.code500Schema,
         },
-        requestBody: requestBody.createPost,
+        requestBody: requestBody.createUserProfile,
       },
     };
 
     return newSchema;
   }
-  updateSchema() {
-    const newSchema: PathItemObject = {
-      put: {
-        summary: "Atualiza um post pelo id",
-        description: "Atualiza os dados do post de id informado.",
-        tags: [this.adminTag],
-        parameters: [
-          {
-            $ref: "#/components/parameters/ParameterId",
-          },
-        ],
-        responses: {
-          204: http.code204Schema,
-          400: http.validationErrorSchema,
-          401: http.adminAcess401Error,
-          404: http.code404Schema,
-          500: http.code500Schema,
-        },
-        requestBody: requestBody.createPost,
-      },
-    };
-
-    return newSchema;
-  }
-  deleteSchema() {
+  deleteSchema(): PathItemObject {
     const newSchema: PathItemObject = {
       delete: {
-        summary: "Deleta um post do usuário atual",
-        description:
-          "Verifica o Bearer Token do usuário e deleta um post pertecente à ele.",
+        summary:
+          "Deleta um perfil de usuário pelo id e todos os post ligados à esse perfil.",
+        description: "Deleta o perfil de usuário de id informado.",
         tags: [this.adminTag],
         parameters: [
           {
@@ -100,11 +72,34 @@ export class AdminPostDocs extends CrudDocs {
 
     return newSchema;
   }
-  updateCoverSchema() {
+  updateSchema(): PathItemObject {
     const newSchema: PathItemObject = {
       put: {
-        summary: "Atualiza a capa de um post pelo id",
-        description: "Atualiza a capa do post de id informado.",
+        summary: "Atualiza um perfil de usuário pelo id",
+        description: "Atualiza os dados do perfil de usuário de id informado.",
+        tags: [this.adminTag],
+        parameters: [
+          {
+            $ref: "#/components/parameters/ParameterId",
+          },
+        ],
+        responses: {
+          204: http.code204Schema,
+          401: http.adminAcess401Error,
+          404: http.code404Schema,
+          500: http.code500Schema,
+        },
+        requestBody: requestBody.createUserProfile,
+      },
+    };
+
+    return newSchema;
+  }
+  updateAvatarSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      put: {
+        summary: "Atualiza o avatar de um perfil de usuário pelo id",
+        description: "Atualiza o avatar do perfil de usuário de id informado.",
         tags: [this.adminTag],
         parameters: [
           {
@@ -113,28 +108,13 @@ export class AdminPostDocs extends CrudDocs {
         ],
         responses: {
           200: http.code200Schema({
-            imageUrl: {
-              type: "string",
-              format: "url",
-            },
+            imageUrl: { type: "string", description: "Url da imagem enviada." },
           }),
-          400: http.clientErrorSchema(
-            "Requisição inválida",
-            "Requisição inválida. Precisa-se ser do tipo 'multipart/form-data'"
-          ),
           401: http.adminAcess401Error,
           404: http.code404Schema,
-          413: http.clientErrorSchema(
-            "Arquivo maior que 1,7mb",
-            "Tamanho máximo de arquivo excedido"
-          ),
-          415: http.clientErrorSchema(
-            "Arquivo inválido",
-            "Insira um arquivo de imagem"
-          ),
           500: http.code500Schema,
         },
-        requestBody: requestBody.updatePostCover,
+        requestBody: requestBody.updateUserAvatar,
       },
     };
 
