@@ -26,7 +26,7 @@ export class AdminUserProfileController extends CrudController {
     try {
       await verifyAdminUser(request);
 
-      const { id } = this.userProfileService.getParamId(request);
+      const { id } = this.userProfileService.getParamId(request.params);
       const user = await getUserOrThrow(id);
 
       const validatedProfile = this.userProfileService.validate(request.body);
@@ -43,7 +43,7 @@ export class AdminUserProfileController extends CrudController {
       const { userProfile } = await this.userProfileModel.create(newProfile);
 
       return reply.code(201).send({
-        userUrl: `${appDomain}/users/profile/${userProfile.name}`,
+        userUrl: `${appDomain}/profiles/user/${userProfile.name}`,
       });
     } catch (error) {
       replyErrorResponse(error, reply);

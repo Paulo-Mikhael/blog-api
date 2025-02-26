@@ -82,7 +82,7 @@ export class UserProfileController extends Controller {
       const { userProfile } = await this.userProfileModel.create(newProfile);
 
       return reply.code(201).send({
-        userUrl: `${appDomain}/users/profile/${userProfile.name}`,
+        userUrl: `${appDomain}/profiles/user/${userProfile.name}`,
       });
     } catch (error) {
       replyErrorResponse(error, reply);

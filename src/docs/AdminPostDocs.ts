@@ -80,7 +80,7 @@ export class AdminPostDocs extends CrudDocs {
   deleteSchema() {
     const newSchema: PathItemObject = {
       delete: {
-        summary: "Deleta um post do usuário atual",
+        summary: "Deleta um post pelo id",
         description:
           "Verifica o Bearer Token do usuário e deleta um post pertecente à ele.",
         tags: [this.adminTag],

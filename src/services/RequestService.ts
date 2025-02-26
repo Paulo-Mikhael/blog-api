@@ -4,6 +4,7 @@ import { ClientError } from "../errors/ClientError";
 import { validateFileType } from "../utils/validateFileType";
 import { createOrDeleteFile } from "../utils/createOrDeleteFile";
 import { getFileType } from "../utils/getFileType";
+import { FastifyRequest } from "fastify";
 
 export class RequestService {
   public readonly requiredMessage = "Propriedade inválida ou inexistente";

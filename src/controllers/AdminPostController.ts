@@ -22,7 +22,7 @@ export class AdminPostController extends CrudController {
     try {
       await verifyAdminUser(request);
 
-      const { id } = this.postService.getParamId(request);
+      const { id } = this.postService.getParamId(request.params);
       const user = await getUserOrThrow(id);
       if (!user.profile) {
         throw new ClientError(

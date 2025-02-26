@@ -16,7 +16,7 @@ export class AdminUserProfileDocs extends CrudDocs {
       ],
     },
     {
-      path: "/admin/profiles/avatar",
+      path: "/admin/profiles/avatar/{id}",
       routeDocsArray: [this.updateAvatarSchema()],
     },
   ];
