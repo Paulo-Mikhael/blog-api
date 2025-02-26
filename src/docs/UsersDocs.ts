@@ -42,6 +42,10 @@ export class UsersDocs extends BaseDocs {
       path: "/users/relogin",
       routeDocsArray: [this.reloginSchema()],
     },
+    {
+      path: "/users/recuperation-email",
+      routeDocsArray: [this.sendRecuperationEmailSchema()],
+    },
   ];
 
   createSchema(): PathItemObject {
@@ -86,6 +90,7 @@ export class UsersDocs extends BaseDocs {
           401: http.tokenJWTErrorSchema,
           500: http.code500Schema,
         },
+        security: [{ BearerAuth: [] }],
       },
     };
 
@@ -115,6 +120,7 @@ export class UsersDocs extends BaseDocs {
           500: http.code500Schema,
         },
         requestBody: requestBody.updateUser,
+        security: [{ BearerAuth: [] }],
       },
     };
 
@@ -238,7 +244,33 @@ export class UsersDocs extends BaseDocs {
           404: http.clientErrorSchema("Nenhum usuário logado"),
           500: http.code500Schema,
         },
-        security: [],
+        security: [{ BearerAuth: [] }],
+      },
+    };
+
+    return newSchema;
+  }
+  sendRecuperationEmailSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      post: {
+        summary: "Envia um email de recuperação de senha ao usuário atual",
+        description:
+          "Verifica o Bearer Token do usuário atual e envia um email de recuperação de senha.",
+        tags: [this.userTag],
+        responses: {
+          200: http.code200Schema({
+            message: {
+              type: "string",
+            },
+          }),
+          400: http.clientErrorSchema(
+            "Perfil de usuário inexistente",
+            "Perfil de usuário inexistente. O usuário precisa ter um perfil para criar posts."
+          ),
+          404: http.clientErrorSchema("Nenhum usuário logado"),
+          500: http.code500Schema,
+        },
+        security: [{ BearerAuth: [] }],
       },
     };
 

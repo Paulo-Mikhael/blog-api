@@ -10,6 +10,7 @@ import { ClientError } from "../errors/ClientError";
 import { cookies } from "../utils/cookies";
 import { getUserProfileOrThrow } from "../utils/getUserProfileOrThrow";
 import { PostModel } from "../models/PostModel";
+import { sendEmail } from "../utils/sendEmail";
 
 abstract class BaseController {
   abstract create({ request, reply }: RouteParams): Promise<undefined>;
@@ -191,5 +192,17 @@ export class UserController extends BaseController {
     });
 
     return reply.code(200).send({ userPosts });
+  }
+  async sendRecuperationEmail({ request, reply }: RouteParams) {
+    try {
+      const { userId } = await jsonWebToken.verify(request);
+      const user = await getUserOrThrow(userId);
+
+      await sendEmail("Paulo Miguel");
+
+      return reply.code(200).send({ message: "Email enviado" });
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
   }
 }

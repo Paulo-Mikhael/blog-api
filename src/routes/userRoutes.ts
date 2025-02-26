@@ -24,4 +24,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
   app.get("/users/relogin", (request, reply) =>
     user.relogin({ request, reply })
   );
+  app.post("/users/recuperation-email", (request, reply) => {
+    user.sendRecuperationEmail({ request, reply });
+  });
 };
