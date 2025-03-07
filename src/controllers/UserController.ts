@@ -11,6 +11,8 @@ import { cookies } from "../utils/cookies";
 import { getUserProfileOrThrow } from "../utils/getUserProfileOrThrow";
 import { PostModel } from "../models/PostModel";
 import { sendEmail } from "../utils/sendEmail";
+import { getSafeString } from "../utils/getSafeString";
+import z from "zod";
 
 abstract class BaseController {
   abstract create({ request, reply }: RouteParams): Promise<undefined>;
@@ -196,11 +198,45 @@ export class UserController extends BaseController {
   async sendRecuperationEmail({ request, reply }: RouteParams) {
     try {
       const { userId } = await jsonWebToken.verify(request);
-      const user = await getUserOrThrow(userId);
+      const code = Math.floor(100000 + Math.random() * 900000);
+      const criptoCode = getSafeString(code.toString());
+      console.log(`Código enviado: ${code}`);
 
-      await sendEmail("Paulo Miguel");
+      cookies.passCode.set(reply, criptoCode);
 
-      return reply.code(200).send({ message: "Email enviado" });
+      await sendEmail(userId, code);
+
+      return reply.code(200).send({
+        message:
+          "Email com código de recuperação de senha enviado. Expira em 5 minutos.",
+      });
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async sendRecuperationCode({ request, reply }: RouteParams) {
+    try {
+      const bodySchema = z.object({
+        recuperationCode: z.string({
+          message: "Insira o código de recuperação",
+        }),
+      });
+      const body = bodySchema.parse(request.body);
+      const bodyCode = body.recuperationCode;
+      const sentCode = cookies.get(request).passCode;
+
+      if (!sentCode) {
+        throw new ClientError("Código expirado ou não enviado.");
+      }
+      console.log(`Código pego: ${sentCode}`);
+
+      if (bodyCode === sentCode) {
+        cookies.passCode.remove(reply);
+
+        return reply.code(200).send({ message: "Verificado. Código correto." });
+      }
+
+      return reply.code(401).send({ message: "Código incorreto" });
     } catch (error) {
       replyErrorResponse(error, reply);
     }

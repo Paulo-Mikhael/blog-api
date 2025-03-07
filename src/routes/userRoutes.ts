@@ -27,4 +27,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
   app.post("/users/recuperation-email", (request, reply) => {
     user.sendRecuperationEmail({ request, reply });
   });
+  app.post("/users/recuperation-code", (request, reply) => {
+    user.sendRecuperationCode({ request, reply });
+  });
 };

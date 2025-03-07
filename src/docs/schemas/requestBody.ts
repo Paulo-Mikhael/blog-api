@@ -10,6 +10,9 @@ const userService = new UserService();
 const userProfileService = new UserProfileService();
 
 export const requestBody = {
+  create: (bodyProperties: RequiredPropertiesObject) => {
+    return bodyObject(bodyProperties);
+  },
   createPost: bodyObject(postService.postSchemaDocs),
   createUser: bodyObject(userService.userSchemaDocs),
   createUserProfile: bodyObject(userProfileService.userProfileSchemaDocs),

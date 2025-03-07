@@ -4,9 +4,11 @@ import { cookieOptions } from "../data/cookieOptions";
 import dayjs from "dayjs";
 import z from "zod";
 import { ClientError } from "../errors/ClientError";
+import { getFromSafeString } from "./getFromSafeString";
 
 const userEmailCookieName = "userEmail";
 const sectionIdCookieName = "sectionId";
+const passwordCodeCookieName = "passCode";
 
 export const cookies = {
   get: getCookies,
@@ -17,6 +19,10 @@ export const cookies = {
   [sectionIdCookieName]: {
     remove: removeCookie(sectionIdCookieName),
     set: setCookie(sectionIdCookieName),
+  },
+  [passwordCodeCookieName]: {
+    remove: removeCookie(passwordCodeCookieName),
+    set: setCookie(passwordCodeCookieName, dayjs().add(5, "minutes").toDate()),
   },
 };
 
@@ -29,11 +35,16 @@ function removeCookie(cookieName: string) {
     });
   };
 }
-function setCookie(cookieName: string) {
+function setCookie(cookieName: string, limitDate?: Date) {
+  let expires = limitDate;
+  if (!expires) {
+    expires = dayjs().add(1, "day").toDate(); // Expira em 24 horas
+  }
+
   return (reply: FastifyReply, value: string) => {
     return reply.setCookie(cookieName, value, {
       ...cookieOptions,
-      expires: dayjs().add(1, "day").toDate(), // Expira em 24 horas
+      expires,
     });
   };
 }
@@ -45,12 +56,21 @@ function getCookies(request: FastifyRequest): CookiesPayload {
     sectionId: z.string({
       message: "Nenhum id de sessão encontrado nos cookies",
     }),
+    passCode: z.string().optional(),
   });
   const requestCookies = request.cookies;
 
   try {
     // Se o formato dos cookies não for válido, é tratado como se não houvesse usuário logado
     const validatedCookies = cookiesSchema.parse(requestCookies);
+    const passCodeCookie = validatedCookies.passCode;
+
+    if (passCodeCookie) {
+      return {
+        ...validatedCookies,
+        passCode: getFromSafeString(passCodeCookie),
+      };
+    }
 
     return validatedCookies;
   } catch (error) {

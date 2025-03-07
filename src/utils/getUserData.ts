@@ -15,7 +15,7 @@ export async function getUserData(request: FastifyRequest): Promise<UserData> {
   let userData: UserData;
   const userService = new UserService();
 
-  // Loga o usuário pelo email e senha informados ou pelo token JWT informado
+  // Retorna o email e senha informados através do Basic Auth ou token JWT
   const auth = getBasicAuth(request.headers);
   if (auth) {
     const userModel = new UserModel();

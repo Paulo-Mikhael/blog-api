@@ -46,6 +46,10 @@ export class UsersDocs extends BaseDocs {
       path: "/users/recuperation-email",
       routeDocsArray: [this.sendRecuperationEmailSchema()],
     },
+    {
+      path: "/users/recuperation-code",
+      routeDocsArray: [this.sendRecuperationCodeSchema()],
+    },
   ];
 
   createSchema(): PathItemObject {
@@ -267,10 +271,41 @@ export class UsersDocs extends BaseDocs {
             "Perfil de usuário inexistente",
             "Perfil de usuário inexistente. O usuário precisa ter um perfil para criar posts."
           ),
+          401: http.tokenJWTErrorSchema,
           404: http.clientErrorSchema("Nenhum usuário logado"),
           500: http.code500Schema,
         },
         security: [{ BearerAuth: [] }],
+      },
+    };
+
+    return newSchema;
+  }
+  sendRecuperationCodeSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      post: {
+        summary:
+          "Envia o código de recuperação recebido por email para ser verificado",
+        description: "Verifica o código de recuperação recebido por email.",
+        tags: [this.userTag],
+        responses: {
+          200: http.code200Schema({
+            recuperationCode: {
+              type: "string",
+            },
+          }),
+          400: http.clientErrorSchema(
+            "Perfil de usuário inexistente",
+            "Perfil de usuário inexistente. O usuário precisa ter um perfil para criar posts."
+          ),
+          401: http.clientErrorSchema("Acesso negado", "Código incorreto"),
+          500: http.code500Schema,
+        },
+        security: [],
+        requestBody: requestBody.create({
+          properties: { recuperationCode: { type: "string" } },
+          requiredProperties: ["recuperationCode"],
+        }),
       },
     };
 
