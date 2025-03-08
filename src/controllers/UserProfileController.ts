@@ -65,10 +65,8 @@ export class UserProfileController extends Controller {
   }
   async create({ request, reply }: RouteParams) {
     try {
-      const { userId } = await jsonWebToken.verify(request);
-      const validatedProfile = await this.userProfileService.validate(
-        request.body
-      );
+      const { userId } = await jsonWebToken.verifyUserPayload(request);
+      const validatedProfile = this.userProfileService.validate(request.body);
       const normalizedUserName = this.userProfileService
         .normalizeText(validatedProfile.name)
         .replaceAll(" ", "");
@@ -79,6 +77,11 @@ export class UserProfileController extends Controller {
         ...validatedProfile,
         name: normalizedUserName,
       };
+
+      const user = await getUserOrThrow(userId);
+      if (user.profile) {
+        throw new ClientError("O usuário atual já possui um perfil", 401);
+      }
       const { userProfile } = await this.userProfileModel.create(newProfile);
 
       return reply.code(201).send({
@@ -90,7 +93,7 @@ export class UserProfileController extends Controller {
   }
   async delete({ request, reply }: RouteParams) {
     try {
-      const { userId } = await jsonWebToken.verify(request);
+      const { userId } = await jsonWebToken.verifyUserPayload(request);
       const user = await getUserOrThrow(userId);
       const userProfile = await getUserProfileOrThrow(user.profile?.id);
 
@@ -103,7 +106,7 @@ export class UserProfileController extends Controller {
   }
   async update({ request, reply }: RouteParams) {
     try {
-      const { userId } = await jsonWebToken.verify(request);
+      const { userId } = await jsonWebToken.verifyUserPayload(request);
       const validatedBody = this.userProfileService.validate(request.body);
       const user = await getUserOrThrow(userId);
       const userProfile = await getUserProfileOrThrow(user.profile?.id);
@@ -123,7 +126,7 @@ export class UserProfileController extends Controller {
   }
   async updateAvatar({ request, reply }: RouteParams) {
     try {
-      const { userId } = await jsonWebToken.verify(request);
+      const { userId } = await jsonWebToken.verifyUserPayload(request);
 
       if (!request.isMultipart) {
         throw new ClientError(

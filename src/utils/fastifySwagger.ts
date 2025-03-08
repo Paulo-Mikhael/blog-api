@@ -33,6 +33,13 @@ export const swagger: FastifyPluginAsync = async (fastify) => {
             description:
               "Para usar as rotas '/admin', caso seja adminstrador, insira seu email e senha nos campos abaixo, ou apenas faça login com seu usuário da aplicação.",
           },
+          ResetPasswordAuth: {
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
+            description:
+              "Insira o token JWT recebido após verificar o código de recuperação recebido por email.",
+          },
         },
         parameters,
         schemas,

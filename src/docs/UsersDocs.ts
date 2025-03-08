@@ -50,6 +50,10 @@ export class UsersDocs extends BaseDocs {
       path: "/users/recuperation-code",
       routeDocsArray: [this.sendRecuperationCodeSchema()],
     },
+    {
+      path: "/users/reset-password",
+      routeDocsArray: [this.resetPasswordSchema()],
+    },
   ];
 
   createSchema(): PathItemObject {
@@ -213,6 +217,7 @@ export class UsersDocs extends BaseDocs {
               type: "string",
             },
           }),
+          204: http.code404Schema,
           400: http.clientErrorSchema(
             "Requisição inválida",
             "Usuário inexistente"
@@ -248,7 +253,7 @@ export class UsersDocs extends BaseDocs {
           404: http.clientErrorSchema("Nenhum usuário logado"),
           500: http.code500Schema,
         },
-        security: [{ BearerAuth: [] }],
+        security: [],
       },
     };
 
@@ -267,10 +272,6 @@ export class UsersDocs extends BaseDocs {
               type: "string",
             },
           }),
-          400: http.clientErrorSchema(
-            "Perfil de usuário inexistente",
-            "Perfil de usuário inexistente. O usuário precisa ter um perfil para criar posts."
-          ),
           401: http.tokenJWTErrorSchema,
           404: http.clientErrorSchema("Nenhum usuário logado"),
           500: http.code500Schema,
@@ -290,21 +291,54 @@ export class UsersDocs extends BaseDocs {
         tags: [this.userTag],
         responses: {
           200: http.code200Schema({
-            recuperationCode: {
+            message: {
               type: "string",
+              description: "Mensagem de erro ou sucesso.",
+            },
+            token: {
+              type: "string",
+              description:
+                "Token JWT retornado em caso de sucesso para ser usado na rota '/users/reset-password'",
             },
           }),
-          400: http.clientErrorSchema(
-            "Perfil de usuário inexistente",
-            "Perfil de usuário inexistente. O usuário precisa ter um perfil para criar posts."
-          ),
+          400: http.validationErrorSchema,
           401: http.clientErrorSchema("Acesso negado", "Código incorreto"),
+          404: http.clientErrorSchema("Nenhum usuário logado"),
           500: http.code500Schema,
         },
-        security: [],
+        security: [{ BearerAuth: [] }],
         requestBody: requestBody.create({
           properties: { recuperationCode: { type: "string" } },
           requiredProperties: ["recuperationCode"],
+        }),
+      },
+    };
+
+    return newSchema;
+  }
+  resetPasswordSchema(): PathItemObject {
+    const newSchema: PathItemObject = {
+      put: {
+        summary: "Reseta a senha do usuário.",
+        description:
+          "Verifica o token JWT recebido após verificar o código de recuperação e atualiza a senha do usuário.",
+        tags: [this.userTag],
+        responses: {
+          200: http.code200Schema({
+            message: {
+              type: "string",
+              description: "Mensagem de erro ou sucesso.",
+            },
+          }),
+          400: http.validationErrorSchema,
+          401: http.clientErrorSchema("Acesso negado", "Código incorreto"),
+          406: http.clientErrorSchema("Senha fraca"),
+          500: http.code500Schema,
+        },
+        security: [{ ResetPasswordAuth: [] }],
+        requestBody: requestBody.create({
+          properties: { newPassword: { type: "string" } },
+          requiredProperties: ["newPassword"],
         }),
       },
     };

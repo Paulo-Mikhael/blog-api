@@ -93,7 +93,7 @@ export class UserService extends RequestService {
     return validatedUpdateUserBody;
   }
 
-  private verifyStrongPassword(password: string) {
+  public verifyStrongPassword(password: string) {
     if (password.length < 8) {
       throw new ClientError("A senha deve ter pelo menos 8 caracteres", 406);
     }

@@ -53,7 +53,7 @@ export class UserController extends BaseController {
   }
   async delete({ request, reply }: RouteParams) {
     try {
-      const { userId } = await jsonWebToken.verify(request);
+      const { userId } = await jsonWebToken.verifyUserPayload(request);
       const requiredUser = await getUserOrThrow(userId);
 
       await this.userModel.delete(requiredUser.id);
@@ -67,7 +67,7 @@ export class UserController extends BaseController {
   }
   async update({ request, reply }: RouteParams) {
     try {
-      const { userId } = await jsonWebToken.verify(request);
+      const { userId } = await jsonWebToken.verifyUserPayload(request);
       const user = await getUserOrThrow(userId);
       const validatedUserBody = await this.userService.validateUpdateBody(
         request.body,
@@ -197,7 +197,7 @@ export class UserController extends BaseController {
   }
   async sendRecuperationEmail({ request, reply }: RouteParams) {
     try {
-      const { userId } = await jsonWebToken.verify(request);
+      const { userId } = await jsonWebToken.verifyUserPayload(request);
       const code = Math.floor(100000 + Math.random() * 900000);
       const criptoCode = getSafeString(code.toString());
       console.log(`Código enviado: ${code}`);
@@ -216,9 +216,11 @@ export class UserController extends BaseController {
   }
   async sendRecuperationCode({ request, reply }: RouteParams) {
     try {
+      const { userId } = await jsonWebToken.verifyUserPayload(request);
+      const user = await getUserOrThrow(userId);
       const bodySchema = z.object({
         recuperationCode: z.string({
-          message: "Insira o código de recuperação",
+          message: "Propriedade inválida ou inexistente.",
         }),
       });
       const body = bodySchema.parse(request.body);
@@ -228,15 +230,49 @@ export class UserController extends BaseController {
       if (!sentCode) {
         throw new ClientError("Código expirado ou não enviado.");
       }
-      console.log(`Código pego: ${sentCode}`);
 
       if (bodyCode === sentCode) {
+        const { token } = jsonWebToken.create(
+          { resetPasswordAcess: true, userEmail: user.email, userId },
+          { seconds: 600 }
+        );
         cookies.passCode.remove(reply);
 
-        return reply.code(200).send({ message: "Verificado. Código correto." });
+        return reply.code(200).send({
+          message:
+            "Código correto. Acesse '/users/reset-password' e use o token abaixo em até 10 minutos",
+          token,
+        });
       }
 
       return reply.code(401).send({ message: "Código incorreto" });
+    } catch (error) {
+      replyErrorResponse(error, reply);
+    }
+  }
+  async resetPassword({ request, reply }: RouteParams) {
+    try {
+      const { userId, userEmail } =
+        jsonWebToken.verifyResetPasswordPayload(request);
+      const bodySchema = z.object({
+        newPassword: z.string({
+          message: "A propriedade inválidada ou inexistente",
+        }),
+      });
+      const validatedBody = bodySchema.parse(request.body);
+      const password = validatedBody.newPassword;
+
+      this.userService.verifyStrongPassword(password);
+
+      const updatedUser = {
+        id: userId,
+        email: userEmail,
+        password: this.userService.getSafePassword(password),
+      };
+
+      this.userModel.update(userId, updatedUser);
+
+      return reply.code(204).send();
     } catch (error) {
       replyErrorResponse(error, reply);
     }

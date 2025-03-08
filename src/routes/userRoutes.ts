@@ -30,4 +30,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
   app.post("/users/recuperation-code", (request, reply) => {
     user.sendRecuperationCode({ request, reply });
   });
+  app.put("/users/reset-password", (request, reply) => {
+    user.resetPassword({ request, reply });
+  });
 };

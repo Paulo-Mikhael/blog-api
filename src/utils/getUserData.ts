@@ -29,11 +29,12 @@ export async function getUserData(request: FastifyRequest): Promise<UserData> {
       password: auth.password,
     };
   } else {
-    const { userId } = await jsonWebToken.verify(
+    const { userId } = await jsonWebToken.verifyUserPayload(
       request,
       "Faça login utilizando seu email e senha ou insira um token JWT válido."
     );
     const user = await getUserOrThrow(userId);
+    console.log(user.password);
     userData = {
       id: userId,
       username: user.email,

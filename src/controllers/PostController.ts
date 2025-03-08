@@ -40,7 +40,7 @@ export class PostController extends Controller {
   }
   async create({ request, reply }: RouteParams) {
     try {
-      const { userId } = await jsonWebToken.verify(request);
+      const { userId } = await jsonWebToken.verifyUserPayload(request);
       const user = await getUserOrThrow(userId);
       if (!user.profile) {
         throw new ClientError(
@@ -66,7 +66,7 @@ export class PostController extends Controller {
   }
   async delete({ request, reply }: RouteParams) {
     try {
-      await jsonWebToken.verify(request);
+      await jsonWebToken.verifyUserPayload(request);
       const { id } = this.postService.getParamId(request.params);
       const requiredPost = await getPostOrThrow(id);
 
@@ -78,7 +78,7 @@ export class PostController extends Controller {
   }
   async update({ request, reply }: RouteParams) {
     try {
-      const { userId } = await jsonWebToken.verify(request);
+      const { userId } = await jsonWebToken.verifyUserPayload(request);
       const user = await getUserOrThrow(userId);
       if (!user.profile) {
         throw new ClientError("O usuário atual não possui um perfil.", 406);
@@ -108,7 +108,7 @@ export class PostController extends Controller {
   }
   async updateCover({ request, reply }: RouteParams) {
     try {
-      await jsonWebToken.verify(request);
+      await jsonWebToken.verifyUserPayload(request);
       const { id } = this.postService.getParamId(request.params);
       const postToUpdate = await getPostOrThrow(id);
 

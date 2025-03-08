@@ -6,21 +6,14 @@ import z from "zod";
 import { ClientError } from "../errors/ClientError";
 import { getUserOrThrow } from "./getUserOrThrow";
 import { cookies } from "./cookies";
+import type { ResetPasswordPayload } from "../types/ResetPasswordPayload";
 
 export const jsonWebToken = {
   create: createJsonToken,
-  verify: verifyJsonToken,
+  verifyUserPayload,
   verifyExistentUser,
+  verifyResetPasswordPayload,
 };
-
-const userPayloadSchema = z.object({
-  userId: z.string({
-    message: "É preciso informar o id do usuário em um token JWT",
-  }),
-  sectionId: z.string({
-    message: "É preciso informar o id da sessão em um token JWT",
-  }),
-});
 
 function jwtSecretKey(): string {
   const secretKey = process.env.JWT_SECRET;
@@ -32,11 +25,9 @@ function jwtSecretKey(): string {
 }
 
 function createJsonToken(
-  payload: UserTokenPayload,
+  payload: UserTokenPayload | ResetPasswordPayload,
   time: Time = { hours: "24h" }
 ): { token: string } {
-  const parsedPayload = userPayloadSchema.parse(payload);
-
   const hours = time.hours;
   const seconds = time.seconds;
   let expiresIn: string | number = 0;
@@ -51,12 +42,12 @@ function createJsonToken(
   const options = {
     expiresIn,
   };
-  const token = jwt.sign(parsedPayload, secretKey, options);
+  const token = jwt.sign(payload, secretKey, options);
 
   return { token };
 }
 
-async function verifyJsonToken(
+function verifyJsonToken(
   request: FastifyRequest,
   unauthorizedMessage?: string
 ) {
@@ -78,17 +69,34 @@ async function verifyJsonToken(
     throw new JsonWebTokenError(message);
   }
 
-  const requestCookies = request.cookies;
-  // Nos cookies está o email do usuário logado
-  const cookieUserEmail = requestCookies.userEmail;
-  if (!cookieUserEmail) {
-    throw new JsonWebTokenError("Nenhum usuário logado");
-  }
-
   const secretKey = jwtSecretKey();
   const jwtToken = authorizationStringObject[1];
 
   const payload = jwt.verify(jwtToken, secretKey);
+
+  return { payload };
+}
+
+async function verifyUserPayload(
+  request: FastifyRequest,
+  unauthorizedMessage?: string
+) {
+  console.log("passou aqui :)");
+
+  const { payload } = verifyJsonToken(request, unauthorizedMessage);
+  const userPayloadSchema = z.object({
+    userId: z.string({
+      message: "É preciso informar o id do usuário nesse token JWT",
+    }),
+    sectionId: z.string({
+      message: "É preciso informar o id da sessão nesse token JWT",
+    }),
+  });
+
+  if (!userPayloadSchema.parse(payload)) {
+    throw new JsonWebTokenError("Json inválido.");
+  }
+
   const parsedPayload = userPayloadSchema.parse(payload);
 
   const actualSectionId = cookies.get(request).sectionId;
@@ -98,6 +106,12 @@ async function verifyJsonToken(
 
   const user = await getUserOrThrow(parsedPayload.userId);
 
+  const requestCookies = request.cookies;
+  // Nos cookies está o email do usuário logado
+  const cookieUserEmail = requestCookies.userEmail;
+  if (!cookieUserEmail) {
+    throw new JsonWebTokenError("Nenhum usuário logado");
+  }
   // Se o email extraído do token JWT for diferente do usuário logado
   if (user.email !== cookieUserEmail) {
     throw new JsonWebTokenError(
@@ -106,6 +120,34 @@ async function verifyJsonToken(
   }
 
   return parsedPayload;
+}
+
+function verifyResetPasswordPayload(
+  request: FastifyRequest,
+  unauthorizedMessage?: string
+) {
+  const { payload } = verifyJsonToken(request, unauthorizedMessage);
+  const resetPasswordPayloadSchema = z.object({
+    resetPasswordAcess: z.boolean({
+      message: "É preciso informar o valor booleano de acesso nesse token JWT",
+    }),
+    userEmail: z
+      .string({
+        message: "É preciso informar o email do usuário nesse token JWT",
+      })
+      .email(),
+    userId: z.string({
+      message: "É preciso informar o id do usuário nesse token JWT",
+    }),
+  });
+
+  const parsedPayload = resetPasswordPayloadSchema.parse(payload);
+
+  if (parsedPayload.resetPasswordAcess === false) {
+    throw new JsonWebTokenError("Acesso negado");
+  }
+
+  return { userEmail: parsedPayload.userEmail, userId: parsedPayload.userId };
 }
 
 function verifyExistentUser(request: FastifyRequest, bodyEmail: string) {
