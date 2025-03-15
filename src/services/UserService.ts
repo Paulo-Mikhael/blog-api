@@ -144,13 +144,13 @@ export class UserService extends RequestService {
 
     if (!user) {
       throw new ClientError(
-        "Usuário com o email fornecido não foi encontrado",
+        "Erro ao fazer login. O usuário com o email fornecido não foi encontrado",
         401
       );
     }
 
     if (user.password !== encodedPassword) {
-      throw new ClientError("Senha incorreta", 401);
+      throw new ClientError("Erro ao fazer login. Senha incorreta", 401);
     }
 
     return user;

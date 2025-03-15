@@ -7,6 +7,7 @@ import { Controller } from "./Controller";
 import { UserController } from "./UserController";
 import { cookies } from "../utils/cookies";
 import { verifyAdminUser } from "../utils/verifyAdminUser";
+import z from "zod";
 
 export class AdminUserController extends Controller {
   constructor(
@@ -65,7 +66,7 @@ export class AdminUserController extends Controller {
       cookies.userEmail.remove(reply);
       cookies.sectionId.remove(reply);
 
-      return reply.code(204);
+      return reply.code(204).send();
     } catch (error) {
       replyErrorResponse(error, reply);
     }
@@ -81,12 +82,12 @@ export class AdminUserController extends Controller {
       const updatedUser = {
         id: userToUpdate.id,
         email: updateUserBody.email,
-        password: updateUserBody.password,
+        password: this.userService.getSafePassword(updateUserBody.password),
       };
 
       await this.userModel.update(userToUpdate.id, updatedUser);
 
-      return reply.code(204);
+      return reply.code(204).send();
     } catch (error) {
       replyErrorResponse(error, reply);
     }

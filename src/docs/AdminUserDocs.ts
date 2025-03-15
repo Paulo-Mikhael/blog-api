@@ -152,7 +152,19 @@ export class AdminUserDocs extends Docs {
           ),
           500: http.code500Schema,
         },
-        requestBody: requestBody.updateUser,
+        requestBody: requestBody.create({
+          properties: {
+            email: {
+              type: "string",
+              description: "Id do usuário para atualizar",
+            },
+            password: {
+              type: "string",
+              description: "Id do usuário para atualizar",
+            },
+          },
+          requiredProperties: ["password", "email"],
+        }),
       },
     };
 

@@ -34,7 +34,6 @@ export async function getUserData(request: FastifyRequest): Promise<UserData> {
       "Faça login utilizando seu email e senha ou insira um token JWT válido."
     );
     const user = await getUserOrThrow(userId);
-    console.log(user.password);
     userData = {
       id: userId,
       username: user.email,
