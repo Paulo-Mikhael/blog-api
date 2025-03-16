@@ -81,8 +81,6 @@ async function verifyUserPayload(
   request: FastifyRequest,
   unauthorizedMessage?: string
 ) {
-  console.log("passou aqui :)");
-
   const { payload } = verifyJsonToken(request, unauthorizedMessage);
   const userPayloadSchema = z.object({
     userId: z.string({

@@ -1,7 +1,4 @@
-import { EmailParams, MailerSend, Recipient, Sender } from "mailersend";
-import { getUserOrThrow } from "./getUserOrThrow";
-
-const emailTemplate = (code: string | number): string => {
+export const emailTemplate = (resetPasswordCode: string | number): string => {
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -50,36 +47,10 @@ const emailTemplate = (code: string | number): string => {
     <div class="container">
         <h2>Recuperação de Senha</h2>
         <p>Você solicitou a recuperação de senha. Utilize o código abaixo para redefinir sua senha:</p>
-        <div class="code">${code}</div>
+        <div class="code">${resetPasswordCode}</div>
         <p class="footer">Se você não solicitou essa alteração, ignore este e-mail.</p>
     </div>
 </body>
 </html>
 `;
 };
-
-export async function sendEmail(userId: string, code: string | number) {
-  const domain = "trial-3z0vkloypxxg7qrx.mlsender.net";
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) return;
-
-  const user = await getUserOrThrow(userId);
-  const userProfile = user.profile;
-  if (!userProfile) return;
-
-  const mailerSend = new MailerSend({ apiKey });
-  const sentFrom = new Sender(`blogapi@${domain}`, "Blog's backend server");
-
-  const recipients = [new Recipient(user.email, userProfile.name)];
-
-  const emailParams = new EmailParams()
-    .setFrom(sentFrom)
-    .setTo(recipients)
-    .setReplyTo(sentFrom)
-    .setSubject("Recuperação de senha")
-    .setHtml(emailTemplate(code));
-
-  return await mailerSend.email.send(emailParams).catch(() => {
-    throw new Error("Erro na função 'sendEmail'");
-  });
-}

@@ -32,7 +32,7 @@ export function replyErrorResponse(error: unknown, reply: FastifyReply) {
     console.error(error.stack);
 
     return reply.code(401).send({
-      message: "Token JWT inválido",
+      message: "Erro de login por meio de token JWT",
       error: error.message,
     });
   }

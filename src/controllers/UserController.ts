@@ -200,7 +200,6 @@ export class UserController extends BaseController {
       const { userId } = await jsonWebToken.verifyUserPayload(request);
       const code = Math.floor(100000 + Math.random() * 900000);
       const criptoCode = getSafeString(code.toString());
-      console.log(`Código enviado: ${code}`);
 
       cookies.passCode.set(reply, criptoCode);
 
