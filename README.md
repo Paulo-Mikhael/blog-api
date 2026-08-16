@@ -1,5 +1,5 @@
-# [API para blogs](https://phlox-blog.vercel.app/)
-[![página principal da aplicação](public/images/phlox-blog.png)](https://phlox-blog.vercel.app/)
+# API para blogs [Node 24]
+![página principal da aplicação](public/images/blog-api-image.png)
 
 ## Sobre ✏️
 ### Uma api para aplicações que precisam gerenciar usuários e posts, possui um sistema completo de cadastro, onde é possível gerenciar o usuário atual por meio de token JWT, fazer login e encerrar sessão. A api foi contruída, de modo que, cada usuário acesse apenas o perfil dos demais, para toda vez que houver um acesso, não ocorrer o tráfego de informações sensíveis que não estão no perfil, como a senha.
@@ -109,13 +109,35 @@ uploads
 ```bash
   docker compose up
 ```
+### Aplique as migrations do prisma
+```bash
+  npx prisma migrate dev
+```
 ### Insira alguns dados iniciais (opcional)
 ```bash
   npx prisma db seed
 ```
+### Crie um arquivo .env e insira as seguintes informações
+```bash
+DATABASE_URL="postgresql://docker:docker@localhost:5560/blog-database"; # String de conexão com o banco de dados local
+JWT_SECRET="kdnoivgasfoivnioasvuoduivuiasnvfuiasfnhis2j39hrf9832h8fhwneofh"; # Chave secreta aleatória para assinatura de tokens JWT
+# Variáveis de ambiente obrigatórias apenas para envio de emails (opcional)
+MAILERSENDDOMAIN="Dominio da MailerSend"; # Domínio da MailerSend para envio de emails
+API_KEY="ChaveAPI da MailerSend"; # Chave da API da MailerSend para envio de emails
+```
 ### Inicie o servidor
 ```bash
   npm run dev
+```
+#### Os passos abaixo são obrigatórios apenas para a funcionalidade de enviar emails
+### Crie uma conta na [MailerSend](https://www.mailersend.com/)
+### Na tela [Domains](https://app.mailersend.com/domains), terá um domínio gratis para testes
+### Acesse "Developer tools", e [API tokens](https://app.mailersend.com/api-tokens), e gere uma chave de API
+### Adicione o domínio e a chave de API no arquivo .env
+```bash
+# ...
+MAILERSENDDOMAIN="Dominio da MailerSend"; # Domínio da MailerSend para envio de emails
+API_KEY="ChaveAPI da MailerSend"; # Chave da API da MailerSend para envio de emails
 ```
 
 ## Talvez você queira ver 💡
@@ -123,15 +145,12 @@ uploads
   ### [Currículo](https://docs.google.com/document/d/1xhimUtV6EM7c1GtwBwAHsIonX1HjoLSi/edit)
 
 ## Confira meus outros projetos 🛠️
-  - [Blog PHLOX - Blog de uma empresa de tecnologia](https://github.com/Paulo-Mikhael/phlox-blog?tab=readme-ov-file#readme)
-  - [in.orbit (back-end) - API de metas](https://github.com/Paulo-Mikhael/in-orbit-backend?tab=readme-ov-file#readme)
-  - [Fastask - Gerenciador de Tarefas](https://github.com/Paulo-Mikhael/fastask?tab=readme-ov-file#readme)
-  - [Landing Page para uma academia](https://github.com/Paulo-Mikhael/academia-landing-page?tab=readme-ov-file#readme)
-  - [in.orbit (front-end) - Aplicação de metas pessoais](https://github.com/Paulo-Mikhael/in-orbit-frontend?tab=readme-ov-file#readme)
-  - [Landing Page para um e-commerce de tech](https://github.com/Paulo-Mikhael/phlox?tab=readme-ov-file#readme)
+  - [Barbershop - Plataforma de agendamento](http://github.com/Paulo-Mikhael/blog-api?tab=readme-ov-file)
+  - [Landing Page para uma plataforma de venda de ingressos](https://github.com/Paulo-Mikhael/cinema-lp?tab=readme-ov-file#readme)
+  - [XWritter - Aplicação para compartilhar posts](https://github.com/Paulo-Mikhael/xwriter?tab=readme-ov-file#readme)
 
 ## Contatos 📞
   [![Gmail Badge](https://img.shields.io/badge/Gmail-EA4335.svg?style=for-the-badge&logo=Gmail&logoColor=white)](https://portifolio-react-three.vercel.app/contacts)
-  [![Linkedin Badge](https://img.shields.io/badge/LinkedIn-0A66C2.svg?style=for-the-badge&logo=LinkedIn&logoColor=white)](https://www.linkedin.com/in/paulo-miguel-4b706022b/)
+  [![Linkedin Badge](https://img.shields.io/badge/LinkedIn-0A66C2.svg?style=for-the-badge&logo=LinkedIn&logoColor=white)](https://www.linkedin.com/in/paulo-miguel-bentes-do-nascimento-4b706022b/)
   [![Instagram Badge](https://img.shields.io/badge/Instagram-E4405F.svg?style=for-the-badge&logo=Instagram&logoColor=white)](https://www.instagram.com/pa__miguel?igsh=MWxoYzdqNGluZWcyaA%3D%3D)
-  [![Whatsapp Badge](https://img.shields.io/badge/WhatsApp-25D366.svg?style=for-the-badge&logo=WhatsApp&logoColor=white)](https://api.whatsapp.com/send/?phone=5592992813253&text=Ol%C3%A1%21+Gostaria+de+fazer+uma+oferta...&type=phone_number&app_absent=0)
+  [![Whatsapp Badge](https://img.shields.io/badge/WhatsApp-25D366.svg?style=for-the-badge&logo=WhatsApp&logoColor=white)](https://api.whatsapp.com/send/?phone=5592992813253&type=phone_number&app_absent=0)
