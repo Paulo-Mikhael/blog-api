@@ -2,7 +2,7 @@ name: blog-api
 
 services:
   pg:
-    image: bitnami/postgresql:13.17.0
+    image: bitnami/postgresql:latest
     container_name: postgresql-database
     ports:
       - "5560:5432"
