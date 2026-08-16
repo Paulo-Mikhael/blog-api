@@ -198,6 +198,7 @@ export class UserController extends BaseController {
   async sendRecuperationEmail({ request, reply }: RouteParams) {
     try {
       const { userId } = await jsonWebToken.verifyUserPayload(request);
+      // Random 6 numbers code
       const code = Math.floor(100000 + Math.random() * 900000);
       const criptoCode = getSafeString(code.toString());
 
@@ -239,7 +240,7 @@ export class UserController extends BaseController {
 
         return reply.code(200).send({
           message:
-            "Código correto. Acesse '/users/reset-password' e use o token abaixo em até 10 minutos",
+            "Código correto. Acesse '/users/reset-password' usando o token JWT abaixo",
           token,
         });
       }

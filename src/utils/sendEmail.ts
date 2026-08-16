@@ -2,7 +2,7 @@ import { EmailParams, MailerSend, Recipient, Sender } from "mailersend";
 import { getUserOrThrow } from "./getUserOrThrow";
 
 const emailTemplate = (code: string | number): string => {
-  return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -59,27 +59,34 @@ const emailTemplate = (code: string | number): string => {
 };
 
 export async function sendEmail(userId: string, code: string | number) {
-  const domain = "trial-3z0vkloypxxg7qrx.mlsender.net";
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) return;
+    const domain = process.env.MAILERSENDDOMAIN;
+    if (!domain) {
+        throw new Error("Erro ao pegar o domínio para enviar email");
+    };
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+        throw new Error("Erro ao pegar chave da API para enviar email");
+    };
 
-  const user = await getUserOrThrow(userId);
-  const userProfile = user.profile;
-  if (!userProfile) return;
+    const user = await getUserOrThrow(userId);
+    let userName = user.profile?.name;
+    if (!userName) {
+        userName = "Visitante";
+    };
 
-  const mailerSend = new MailerSend({ apiKey });
-  const sentFrom = new Sender(`blogapi@${domain}`, "Blog's backend server");
+    const mailerSend = new MailerSend({ apiKey });
+    const sentFrom = new Sender(`blogapi@${domain}`, "Blog's backend server");
 
-  const recipients = [new Recipient(user.email, userProfile.name)];
+    const recipients = [new Recipient(user.email, userName)];
 
-  const emailParams = new EmailParams()
-    .setFrom(sentFrom)
-    .setTo(recipients)
-    .setReplyTo(sentFrom)
-    .setSubject("Recuperação de senha")
-    .setHtml(emailTemplate(code));
+    const emailParams = new EmailParams()
+        .setFrom(sentFrom)
+        .setTo(recipients)
+        .setReplyTo(sentFrom)
+        .setSubject("Recuperação de senha")
+        .setHtml(emailTemplate(code));
 
-  return await mailerSend.email.send(emailParams).catch(() => {
-    throw new Error("Erro na função 'sendEmail'");
-  });
+    await mailerSend.email.send(emailParams).catch(() => {
+        throw new Error("Erro na função 'sendEmail'");
+    });
 }

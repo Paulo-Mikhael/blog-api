@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { postRoutes } from "./routes/postRoutes";
+import { postRoutes } from "./routes/PostRoutes";
 import { userRoutes } from "./routes/userRoutes";
 import { userProfileRoutes } from "./routes/userProfileRoutes";
 import { adminUserRoutes } from "./routes/adminUserRoutes";
