@@ -2,7 +2,7 @@
 ![página principal da aplicação](public/images/blog-api-image.png)
 
 ## Sobre ✏️
-### Uma api para aplicações que precisam gerenciar usuários e posts, possui um sistema completo de cadastro, onde é possível gerenciar o usuário atual por meio de token JWT, fazer login e encerrar sessão. A api foi contruída, de modo que, cada usuário acesse apenas o perfil dos demais, para toda vez que houver um acesso, não ocorrer o tráfego de informações sensíveis que não estão no perfil, como a senha.
+### Uma api para aplicações que precisam gerenciar usuários e posts, possui um sistema completo de cadastro, onde é possível gerenciar o usuário atual por meio de token JWT, fazer login e encerrar sessão. Além disso, é possível um usuário redefinir a senha através de um código enviado por email.<br />A API foi estruturadada com tratamento de erros, verificação de tokens JWT, gerenciamento de cookies, armazenamento local de arquivos e design pattern MVC.
 
 ## Tecnologias 💻
 <div>
